@@ -13,7 +13,7 @@ const normalizeRecord = (record: any): UniformRecord => ({
   namaKaryawan: record.namaKaryawan ?? 'Unknown',
   nik: record.nip ?? '',
   departemen: record.departemen ?? 'Unknown',
-  section: record.section || (record.departemen && record.departemen !== 'Unknown' ? 'Belum diisi' : 'N/A'),
+  section: typeof record.section === 'string' ? record.section : '',
   jenisBaju: record.jenisSeragam ?? 'Tidak ada data',
   ukuran: record.ukuran ?? 'M',
   jumlahStel: Number(record.jumlah ?? 1),

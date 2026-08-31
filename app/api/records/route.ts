@@ -59,6 +59,7 @@ export async function POST(request: Request) {
 export async function PATCH(request: Request) {
   const body = await request.json()
   const { id, ...payload } = body
+  if (!id) return NextResponse.json({ error: 'ID data wajib diisi.' }, { status: 400 })
 
   const tanggalPengajuan = payload.tanggalPengajuan ? toDate(payload.tanggalPengajuan) : undefined
   const tanggalPenerimaan = payload.tanggalPenerimaan === null ? null : payload.tanggalPenerimaan ? toDate(payload.tanggalPenerimaan) : undefined
@@ -67,12 +68,19 @@ export async function PATCH(request: Request) {
     const record = await prisma.uniformRecord.update({
       where: { id },
       data: {
-        ...payload,
-        jumlah: payload.jumlah ? Number(payload.jumlah) : undefined,
+        ...(payload.noPR !== undefined ? { noPR: String(payload.noPR).trim() } : {}),
+        ...(payload.namaKaryawan !== undefined ? { namaKaryawan: String(payload.namaKaryawan).trim() } : {}),
+        ...(payload.nip !== undefined ? { nip: payload.nip ? String(payload.nip).trim() : null } : {}),
+        ...(payload.departemen !== undefined ? { departemen: String(payload.departemen).trim() } : {}),
+        ...(payload.section !== undefined ? { section: payload.section ? String(payload.section).trim() : null } : {}),
+        ...(payload.ukuran !== undefined ? { ukuran: String(payload.ukuran) } : {}),
+        ...(payload.jenisSeragam !== undefined ? { jenisSeragam: String(payload.jenisSeragam) } : {}),
+        ...(payload.jumlah !== undefined ? { jumlah: Math.max(1, Number(payload.jumlah) || 1) } : {}),
+        ...(payload.status !== undefined ? { status: String(payload.status) } : {}),
         ...(tanggalPengajuan ? { tanggalPengajuan } : {}),
         ...(tanggalPenerimaan !== undefined ? { tanggalPenerimaan } : {}),
         ...(payload.status === 'Diterima' && !payload.tanggalPenerimaan ? { tanggalPenerimaan: new Date() } : {}),
-        ...(payload.keterangan === null ? { keterangan: null } : {}),
+        ...(payload.keterangan !== undefined ? { keterangan: payload.keterangan ? String(payload.keterangan).trim() : null } : {}),
       },
     })
 

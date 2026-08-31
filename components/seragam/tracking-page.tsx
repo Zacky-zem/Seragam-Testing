@@ -60,7 +60,12 @@ export function TrackingPage({
   const [selectedIds, setSelectedIds] = useState<string[]>([])
   const [editingRecord, setEditingRecord] = useState<UniformRecord | null>(null)
   const uploadInputRef = useRef<HTMLInputElement>(null)
-  const [openFilter, setOpenFilter] = useState<'dept' | 'pr' | null>(null)
+  const [isFilterOpen, setIsFilterOpen] = useState(false)
+  const [filterSection, setFilterSection] = useState('ALL')
+  const [filterJenisBaju, setFilterJenisBaju] = useState('ALL')
+  const [filterUkuran, setFilterUkuran] = useState('ALL')
+  const [filterNik, setFilterNik] = useState('')
+  const [filterNama, setFilterNama] = useState('')
 
   const uniquePRList = useMemo(() => Array.from(new Set(records.map((r) => r.noPR))).filter(Boolean).sort(), [records])
   const uniqueDeptFilterList = useMemo(() => Array.from(new Set([...departments, ...records.map((r) => r.departemen)])).filter(Boolean), [records])
@@ -76,8 +81,13 @@ export function TrackingPage({
         const matchSection = (item.section || '').toLowerCase().includes(q)
         if (!matchName && !matchNik && !matchPR && !matchDept && !matchSection) return false
       }
+      if (filterNama.trim() && !item.namaKaryawan.toLowerCase().includes(filterNama.toLowerCase().trim())) return false
+      if (filterNik.trim() && !item.nik.toLowerCase().includes(filterNik.toLowerCase().trim())) return false
       if (selectedDept !== 'ALL' && item.departemen !== selectedDept) return false
       if (selectedPR !== 'ALL' && item.noPR !== selectedPR) return false
+      if (filterSection !== 'ALL' && item.section !== filterSection) return false
+      if (filterJenisBaju !== 'ALL' && item.jenisBaju !== filterJenisBaju) return false
+      if (filterUkuran !== 'ALL' && item.ukuran !== filterUkuran) return false
       if (selectedStatus === 'dipesan' && item.tglTerima) return false
       if (selectedStatus === 'diterima' && !item.tglTerima) return false
       if (startDateInput && item.tglInput < startDateInput) return false
@@ -185,13 +195,21 @@ export function TrackingPage({
     onUpdateRecord({ ...record, tglTerima: today })
   }
 
-  const hasActiveFilters = searchQuery || selectedDept !== 'ALL' || selectedStatus !== 'all' || selectedPR !== 'ALL' || startDateInput || endDateInput
+  const uniqueSectionList = useMemo(() => Array.from(new Set(records.map((r) => r.section).filter(Boolean))).sort(), [records])
+  const uniqueJenisList = useMemo(() => Array.from(new Set(records.map((r) => r.jenisBaju).filter(Boolean))).sort(), [records])
+  const uniqueUkuranList = useMemo(() => Array.from(new Set(records.map((r) => r.ukuran).filter(Boolean))).sort(), [records])
+  const hasActiveFilters = searchQuery || filterNama || filterNik || selectedDept !== 'ALL' || selectedStatus !== 'all' || selectedPR !== 'ALL' || filterSection !== 'ALL' || filterJenisBaju !== 'ALL' || filterUkuran !== 'ALL' || startDateInput || endDateInput
 
   const resetFilters = () => {
     setSearchQuery('')
+    setFilterNama('')
+    setFilterNik('')
     setSelectedDept('ALL')
     setSelectedStatus('all')
     setSelectedPR('ALL')
+    setFilterSection('ALL')
+    setFilterJenisBaju('ALL')
+    setFilterUkuran('ALL')
     setStartDateInput('')
     setEndDateInput('')
     setCurrentPage(1)
@@ -376,29 +394,17 @@ export function TrackingPage({
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 h-4 w-4" />
             <input value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Cari nama, NIK, PR, departemen, section..." className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2.5 pl-9 pr-3 text-sm text-slate-700 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20" />
           </div>
-          <div className="flex flex-wrap items-center gap-2">
-            <button onClick={() => setSelectedStatus('all')} className={`rounded-lg px-3 py-1.5 text-xs font-semibold ${selectedStatus === 'all' ? 'bg-[#143254] text-white' : 'bg-slate-100 text-slate-700'}`}>Semua</button>
-            <button onClick={() => setSelectedStatus('dipesan')} className={`rounded-lg px-3 py-1.5 text-xs font-semibold ${selectedStatus === 'dipesan' ? 'bg-[#143254] text-white' : 'bg-slate-100 text-slate-700'}`}>Dipesan</button>
-            <button onClick={() => setSelectedStatus('diterima')} className={`rounded-lg px-3 py-1.5 text-xs font-semibold ${selectedStatus === 'diterima' ? 'bg-[#143254] text-white' : 'bg-slate-100 text-slate-700'}`}>Diterima</button>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-2 text-xs text-slate-600">
-            <div className="relative">
-              <button type="button" onClick={() => setOpenFilter(openFilter === 'dept' ? null : 'dept')} className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1.5">Dept <span className="font-semibold text-slate-900">{selectedDept === 'ALL' ? 'ALL' : selectedDept}</span><ChevronDown className="h-3.5 w-3.5" /></button>
-              {openFilter === 'dept' && <div className="absolute right-0 z-20 mt-1 max-h-56 min-w-52 overflow-auto rounded-xl border border-slate-200 bg-white p-2 shadow-lg">
-                <label className="flex cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 hover:bg-slate-50"><input type="checkbox" checked={selectedDept === 'ALL'} onChange={() => setSelectedDept('ALL')} /> Semua departemen</label>
-                {uniqueDeptFilterList.map((dept) => <label key={dept} className="flex cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 hover:bg-slate-50"><input type="checkbox" checked={selectedDept === dept} onChange={() => setSelectedDept(selectedDept === dept ? 'ALL' : dept)} /> {dept}</label>)}
-              </div>}
-            </div>
-            <div className="relative">
-              <button type="button" onClick={() => setOpenFilter(openFilter === 'pr' ? null : 'pr')} className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1.5">PR <span className="font-semibold text-slate-900">{selectedPR === 'ALL' ? 'ALL' : selectedPR}</span><ChevronDown className="h-3.5 w-3.5" /></button>
-              {openFilter === 'pr' && <div className="absolute right-0 z-20 mt-1 max-h-56 min-w-52 overflow-auto rounded-xl border border-slate-200 bg-white p-2 shadow-lg">
-                <label className="flex cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 hover:bg-slate-50"><input type="checkbox" checked={selectedPR === 'ALL'} onChange={() => setSelectedPR('ALL')} /> Semua PR</label>
-                {uniquePRList.map((pr) => <label key={pr} className="flex cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 hover:bg-slate-50"><input type="checkbox" checked={selectedPR === pr} onChange={() => setSelectedPR(selectedPR === pr ? 'ALL' : pr)} /> {pr}</label>)}
-              </div>}
-            </div>
-            <label className="flex items-center gap-2"><span>From</span><input type="date" value={startDateInput} onChange={(e) => setStartDateInput(e.target.value)} className="rounded-lg border border-slate-200 bg-slate-50 px-2 py-1.5" /></label>
-            <label className="flex items-center gap-2"><span>To</span><input type="date" value={endDateInput} onChange={(e) => setEndDateInput(e.target.value)} className="rounded-lg border border-slate-200 bg-slate-50 px-2 py-1.5" /></label>
+          <div className="relative flex items-center gap-2">
+            <button type="button" onClick={() => setIsFilterOpen((value) => !value)} className={`inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-xs font-semibold ${hasActiveFilters ? 'border-blue-300 bg-blue-50 text-blue-800' : 'border-slate-200 bg-white text-slate-700'}`}><Filter className="h-3.5 w-3.5" /> Filter {hasActiveFilters ? '(aktif)' : ''}</button>
+            {isFilterOpen && <div className="absolute right-0 top-11 z-30 grid w-[min(92vw,680px)] gap-3 rounded-2xl border border-slate-200 bg-white p-4 text-xs shadow-xl sm:grid-cols-2 lg:grid-cols-3">
+              <label className="grid gap-1 font-semibold">Nama<input value={filterNama} onChange={(e) => setFilterNama(e.target.value)} className="rounded-lg border border-slate-200 px-2.5 py-2 font-normal" placeholder="Cari nama" /></label>
+              <label className="grid gap-1 font-semibold">NIK<input value={filterNik} onChange={(e) => setFilterNik(e.target.value)} className="rounded-lg border border-slate-200 px-2.5 py-2 font-normal" placeholder="Cari NIK" /></label>
+              {([['Departemen', selectedDept, setSelectedDept, uniqueDeptFilterList], ['Nomor PR', selectedPR, setSelectedPR, uniquePRList], ['Section', filterSection, setFilterSection, uniqueSectionList], ['Jenis Baju', filterJenisBaju, setFilterJenisBaju, uniqueJenisList], ['Ukuran', filterUkuran, setFilterUkuran, uniqueUkuranList]] as const).map(([label, value, setter, options]) => <label key={label} className="grid gap-1 font-semibold">{label}<select value={value} onChange={(e) => setter(e.target.value)} className="rounded-lg border border-slate-200 px-2.5 py-2 font-normal"><option value="ALL">Semua</option>{options.map((option) => <option key={option} value={option}>{option}</option>)}</select></label>)}
+              <label className="grid gap-1 font-semibold">Status<select value={selectedStatus} onChange={(e) => setSelectedStatus(e.target.value as typeof selectedStatus)} className="rounded-lg border border-slate-200 px-2.5 py-2 font-normal"><option value="all">Semua</option><option value="dipesan">Dipesan</option><option value="diterima">Diterima</option></select></label>
+              <label className="grid gap-1 font-semibold">Tanggal mulai<input type="date" value={startDateInput} onChange={(e) => setStartDateInput(e.target.value)} className="rounded-lg border border-slate-200 px-2.5 py-2 font-normal" /></label>
+              <label className="grid gap-1 font-semibold">Tanggal akhir<input type="date" value={endDateInput} onChange={(e) => setEndDateInput(e.target.value)} className="rounded-lg border border-slate-200 px-2.5 py-2 font-normal" /></label>
+              <div className="flex items-end justify-end gap-2 sm:col-span-2 lg:col-span-3"><button type="button" onClick={resetFilters} className="rounded-lg border border-slate-200 px-3 py-2 font-semibold">Reset</button><button type="button" onClick={() => setIsFilterOpen(false)} className="rounded-lg bg-[#143254] px-3 py-2 font-semibold text-white">Terapkan</button></div>
+            </div>}
           </div>
         </div>
 
