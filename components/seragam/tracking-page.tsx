@@ -73,7 +73,7 @@ export function TrackingPage({
         const matchNik = item.nik.toLowerCase().includes(q)
         const matchPR = item.noPR.toLowerCase().includes(q)
         const matchDept = item.departemen.toLowerCase().includes(q)
-        const matchSection = item.section.toLowerCase().includes(q)
+        const matchSection = (item.section || '').toLowerCase().includes(q)
         if (!matchName && !matchNik && !matchPR && !matchDept && !matchSection) return false
       }
       if (selectedDept !== 'ALL' && item.departemen !== selectedDept) return false
@@ -383,32 +383,22 @@ export function TrackingPage({
           </div>
 
           <div className="flex flex-wrap items-center gap-2 text-xs text-slate-600">
-            <label className="flex items-center gap-2">
-              <span>Dept</span>
-              <select value={selectedDept} onChange={(e) => setSelectedDept(e.target.value)} className="rounded-lg border border-slate-200 bg-slate-50 px-2 py-1.5">
-                <option value="ALL">ALL</option>
-                {uniqueDeptFilterList.map((dept) => (
-                  <option key={dept} value={dept}>{dept}</option>
-                ))}
-              </select>
-            </label>
-            <label className="flex items-center gap-2">
-              <span>PR</span>
-              <select value={selectedPR} onChange={(e) => setSelectedPR(e.target.value)} className="rounded-lg border border-slate-200 bg-slate-50 px-2 py-1.5">
-                <option value="ALL">ALL</option>
-                {uniquePRList.map((pr) => (
-                  <option key={pr} value={pr}>{pr}</option>
-                ))}
-              </select>
-            </label>
-            <label className="flex items-center gap-2">
-              <span>From</span>
-              <input type="date" value={startDateInput} onChange={(e) => setStartDateInput(e.target.value)} className="rounded-lg border border-slate-200 bg-slate-50 px-2 py-1.5" />
-            </label>
-            <label className="flex items-center gap-2">
-              <span>To</span>
-              <input type="date" value={endDateInput} onChange={(e) => setEndDateInput(e.target.value)} className="rounded-lg border border-slate-200 bg-slate-50 px-2 py-1.5" />
-            </label>
+            <div className="relative">
+              <button type="button" onClick={() => setOpenFilter(openFilter === 'dept' ? null : 'dept')} className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1.5">Dept <span className="font-semibold text-slate-900">{selectedDept === 'ALL' ? 'ALL' : selectedDept}</span><ChevronDown className="h-3.5 w-3.5" /></button>
+              {openFilter === 'dept' && <div className="absolute right-0 z-20 mt-1 max-h-56 min-w-52 overflow-auto rounded-xl border border-slate-200 bg-white p-2 shadow-lg">
+                <label className="flex cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 hover:bg-slate-50"><input type="checkbox" checked={selectedDept === 'ALL'} onChange={() => setSelectedDept('ALL')} /> Semua departemen</label>
+                {uniqueDeptFilterList.map((dept) => <label key={dept} className="flex cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 hover:bg-slate-50"><input type="checkbox" checked={selectedDept === dept} onChange={() => setSelectedDept(selectedDept === dept ? 'ALL' : dept)} /> {dept}</label>)}
+              </div>}
+            </div>
+            <div className="relative">
+              <button type="button" onClick={() => setOpenFilter(openFilter === 'pr' ? null : 'pr')} className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1.5">PR <span className="font-semibold text-slate-900">{selectedPR === 'ALL' ? 'ALL' : selectedPR}</span><ChevronDown className="h-3.5 w-3.5" /></button>
+              {openFilter === 'pr' && <div className="absolute right-0 z-20 mt-1 max-h-56 min-w-52 overflow-auto rounded-xl border border-slate-200 bg-white p-2 shadow-lg">
+                <label className="flex cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 hover:bg-slate-50"><input type="checkbox" checked={selectedPR === 'ALL'} onChange={() => setSelectedPR('ALL')} /> Semua PR</label>
+                {uniquePRList.map((pr) => <label key={pr} className="flex cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 hover:bg-slate-50"><input type="checkbox" checked={selectedPR === pr} onChange={() => setSelectedPR(selectedPR === pr ? 'ALL' : pr)} /> {pr}</label>)}
+              </div>}
+            </div>
+            <label className="flex items-center gap-2"><span>From</span><input type="date" value={startDateInput} onChange={(e) => setStartDateInput(e.target.value)} className="rounded-lg border border-slate-200 bg-slate-50 px-2 py-1.5" /></label>
+            <label className="flex items-center gap-2"><span>To</span><input type="date" value={endDateInput} onChange={(e) => setEndDateInput(e.target.value)} className="rounded-lg border border-slate-200 bg-slate-50 px-2 py-1.5" /></label>
           </div>
         </div>
 
@@ -444,7 +434,7 @@ export function TrackingPage({
                   <td className="px-4 py-3 font-medium text-slate-800">{record.namaKaryawan}</td>
                   <td className="px-4 py-3 text-slate-700">
                     <div>{record.departemen}</div>
-                    <div className="mt-0.5 text-xs text-slate-500">{record.section}</div>
+                    <div className="mt-0.5 text-xs text-slate-500">{record.section || 'Belum diisi'}</div>
                   </td>
                   <td className="px-4 py-3 text-slate-700">{record.jenisBaju}</td>
                   <td className="px-4 py-3">
