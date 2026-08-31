@@ -16,12 +16,26 @@ export async function GET(request: Request) {
   return NextResponse.json(records)
 }
 export async function POST(request: Request) {
-  const body = await request.json()
-  if (!body.noPR || !body.namaKaryawan || !body.departemen || !body.jenisSeragam) {
-    return NextResponse.json({ error: 'Field wajib belum lengkap' }, { status: 400 })
+  let body: Record<string, unknown>
+  try {
+    body = await request.json()
+  } catch {
+    return NextResponse.json({ error: 'Format data tidak valid.' }, { status: 400 })
   }
 
-  const existing = await prisma.uniformRecord.findUnique({ where: { noPR: body.noPR } })
+  const noPR = String(body.noPR ?? '').trim().toUpperCase()
+  const namaKaryawan = String(body.namaKaryawan ?? '').trim()
+  const departemen = String(body.departemen ?? '').trim()
+  const jenisSeragam = String(body.jenisSeragam ?? '').trim()
+  const jumlah = Number(body.jumlah ?? 1)
+  if (!noPR || !namaKaryawan || !departemen || !jenisSeragam) {
+    return NextResponse.json({ error: 'Field wajib belum lengkap' }, { status: 400 })
+  }
+  if (!Number.isInteger(jumlah) || jumlah < 1) {
+    return NextResponse.json({ error: 'Jumlah stel harus berupa bilangan bulat minimal 1.' }, { status: 400 })
+  }
+
+  const existing = await prisma.uniformRecord.findUnique({ where: { noPR } })
   if (existing) {
     return NextResponse.json({ error: `Nomor PR ${body.noPR} sudah terdaftar. Silakan gunakan nomor PR lain atau edit data yang ada.` }, { status: 409 })
   }
@@ -32,15 +46,15 @@ export async function POST(request: Request) {
   try {
     const record = await prisma.uniformRecord.create({
       data: {
-        noPR: body.noPR,
-        namaKaryawan: body.namaKaryawan,
-        nip: body.nip || null,
-        departemen: body.departemen,
-        section: body.section || null,
-        ukuran: body.ukuran || 'M',
-        jenisSeragam: body.jenisSeragam,
-        jumlah: Number(body.jumlah) || 1,
-        status: body.status || 'Diajukan',
+        noPR,
+        namaKaryawan,
+        nip: body.nip ? String(body.nip).trim() : null,
+        departemen,
+        section: body.section ? String(body.section).trim() : null,
+        ukuran: body.ukuran ? String(body.ukuran) : 'M',
+        jenisSeragam,
+        jumlah,
+        status: body.status ? String(body.status) : 'Diajukan',
         tanggalPengajuan,
         tanggalPenerimaan,
         keterangan: body.keterangan || null,
@@ -53,7 +67,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: `Nomor PR ${body.noPR} sudah terdaftar.` }, { status: 409 })
     }
 
-    return NextResponse.json({ error: 'Gagal menyimpan data seragam.' }, { status: 500 })
+    console.error('[v0] POST /api/records failed:', error)
+    return NextResponse.json({ error: 'Gagal menyimpan data seragam.', detail: process.env.NODE_ENV === 'development' && error instanceof Error ? error.message : undefined }, { status: 500 })
   }
 }
 export async function PATCH(request: Request) {
