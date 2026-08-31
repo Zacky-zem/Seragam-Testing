@@ -21,6 +21,7 @@ model UniformRecord {
   namaKaryawan    String
   nip             String?
   departemen      String
+  section         String?
   ukuran          String
   jenisSeragam    String
   jumlah          Int      @default(1)

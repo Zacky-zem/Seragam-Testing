@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useEffect, useState } from 'react'
 import { AlertCircle, CheckCircle2, Info, X } from 'lucide-react'
@@ -13,7 +13,7 @@ const normalizeRecord = (record: any): UniformRecord => ({
   namaKaryawan: record.namaKaryawan ?? 'Unknown',
   nik: record.nip ?? '',
   departemen: record.departemen ?? 'Unknown',
-  section: record.section ?? 'N/A',
+  section: record.section || (record.departemen && record.departemen !== 'Unknown' ? 'Belum diisi' : 'N/A'),
   jenisBaju: record.jenisSeragam ?? 'Tidak ada data',
   ukuran: record.ukuran ?? 'M',
   jumlahStel: Number(record.jumlah ?? 1),
@@ -28,6 +28,7 @@ const toApiPayload = (record: UniformRecord) => ({
   namaKaryawan: record.namaKaryawan,
   nip: record.nik,
   departemen: record.departemen,
+  section: record.section,
   ukuran: record.ukuran,
   jenisSeragam: record.jenisBaju,
   jumlah: record.jumlahStel,
@@ -86,7 +87,7 @@ export default function SeragamDashboard() {
       setUser({
         username: data.user.username,
         fullName: data.user.name,
-        role: 'General Affairs / HR Admin',
+        role: 'admin',
         isLoggedIn: true,
       })
       setCurrentView('landing')

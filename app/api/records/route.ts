@@ -12,7 +12,7 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
   const q = searchParams.get('q') || undefined
   const status = searchParams.get('status') || undefined
-  const records = await prisma.uniformRecord.findMany({ where: { ...(status && status !== 'Semua' ? { status } : {}), ...(q ? { OR: [{ noPR: { contains: q, mode: 'insensitive' } }, { namaKaryawan: { contains: q, mode: 'insensitive' } }, { departemen: { contains: q, mode: 'insensitive' } }] } : {}) }, orderBy: { createdAt: 'desc' } })
+  const records = await prisma.uniformRecord.findMany({ where: { ...(status && status !== 'Semua' ? { status } : {}), ...(q ? { OR: [{ noPR: { contains: q, mode: 'insensitive' } }, { namaKaryawan: { contains: q, mode: 'insensitive' } }, { departemen: { contains: q, mode: 'insensitive' } }, { section: { contains: q, mode: 'insensitive' } }] } : {}) }, orderBy: { createdAt: 'desc' } })
   return NextResponse.json(records)
 }
 export async function POST(request: Request) {
@@ -36,6 +36,7 @@ export async function POST(request: Request) {
         namaKaryawan: body.namaKaryawan,
         nip: body.nip || null,
         departemen: body.departemen,
+        section: body.section || null,
         ukuran: body.ukuran || 'M',
         jenisSeragam: body.jenisSeragam,
         jumlah: Number(body.jumlah) || 1,
