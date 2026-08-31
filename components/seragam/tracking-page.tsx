@@ -94,7 +94,7 @@ export function TrackingPage({
       if (endDateInput && item.tglInput > endDateInput) return false
       return true
     })
-  }, [records, searchQuery, selectedDept, selectedStatus, selectedPR, startDateInput, endDateInput])
+  }, [records, searchQuery, filterNama, filterNik, selectedDept, selectedStatus, selectedPR, filterSection, filterJenisBaju, filterUkuran, startDateInput, endDateInput])
 
   const totalPages = Math.max(1, Math.ceil(filteredRecords.length / itemsPerPage))
   const paginatedRecords = useMemo(() => {
@@ -230,8 +230,9 @@ export function TrackingPage({
     XLSX.writeFile(book, `template-${kind}.xlsx`)
   }
 
-  const exportExcel = () => {
-    const rows = filteredRecords.map((record) => ({
+  const exportExcel = (useFilter = true) => {
+    const sourceRecords = useFilter ? filteredRecords : records
+    const rows = sourceRecords.map((record) => ({
       'No. PR': record.noPR, NIK: record.nik, 'Nama Karyawan': record.namaKaryawan,
       Departemen: record.departemen, Section: record.section, 'Jenis Baju': record.jenisBaju,
       Ukuran: record.ukuran, Jumlah: record.jumlahStel, 'Tgl Input': record.tglInput,
@@ -240,7 +241,7 @@ export function TrackingPage({
     const sheet = XLSX.utils.json_to_sheet(rows)
     const book = XLSX.utils.book_new()
     XLSX.utils.book_append_sheet(book, sheet, 'Data Seragam')
-    XLSX.writeFile(book, `data-seragam-${new Date().toISOString().slice(0, 10)}.xlsx`)
+    XLSX.writeFile(book, `${useFilter ? 'hasil-filter-seragam' : 'semua-data-seragam'}-${new Date().toISOString().slice(0, 10)}.xlsx`)
   }
 
   const importPengajuan = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -280,9 +281,13 @@ export function TrackingPage({
               <PackageCheck className="h-3.5 w-3.5 text-emerald-600" />
               <span>Update Penerimaan</span>
             </button>
-            <button onClick={exportExcel} className="inline-flex items-center gap-1.5 rounded-xl bg-[#143254] px-3.5 py-2 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-[#1d4470]">
+            <button onClick={() => exportExcel(true)} className="inline-flex items-center gap-1.5 rounded-xl bg-[#143254] px-3.5 py-2 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-[#1d4470]">
               <FileSpreadsheet className="h-3.5 w-3.5" />
-              <span>Ekspor Excel</span>
+              <span>Unduh Hasil Filter</span>
+            </button>
+            <button onClick={() => exportExcel(false)} className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 shadow-sm transition-colors hover:bg-slate-50">
+              <Download className="h-3.5 w-3.5" />
+              <span>Unduh Semua</span>
             </button>
           </div>
         </div>
