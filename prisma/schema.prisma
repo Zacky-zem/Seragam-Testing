@@ -1,0 +1,37 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  username     String   @unique
+  passwordHash String
+  name         String
+  createdAt    DateTime @default(now())
+}
+
+model UniformRecord {
+  id              String   @id @default(cuid())
+  noPR            String   @unique
+  namaKaryawan    String
+  nip             String?
+  departemen      String
+  ukuran          String
+  jenisSeragam    String
+  jumlah          Int      @default(1)
+  tanggalPengajuan DateTime?
+  tanggalPenerimaan DateTime?
+  status          String   @default("Diajukan")
+  keterangan      String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  @@index([namaKaryawan])
+  @@index([departemen])
+  @@index([status])
+  @@index([tanggalPengajuan])
+}

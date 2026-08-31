@@ -1,0 +1,498 @@
+'use client'
+
+import React, { useMemo, useState } from 'react'
+import {
+  CheckCircle2,
+  CheckSquare,
+  ChevronLeft,
+  ChevronRight,
+  Filter,
+  FileSpreadsheet,
+  PackageCheck,
+  Search,
+  Trash2,
+  Upload,
+  X,
+} from 'lucide-react'
+import { departments, sectionsMap, uniformSizes, uniformTypes } from './data'
+import type { UniformRecord } from './types'
+import { EditRecordModal } from './edit-record-modal'
+
+export function TrackingPage({
+  records,
+  onAddRecord,
+  onUpdateRecord,
+  onDeleteRecord,
+  onNavigateHome,
+}: {
+  records: UniformRecord[]
+  onAddRecord: (newRecord: UniformRecord) => void
+  onUpdateRecord: (updatedRecord: UniformRecord) => void
+  onDeleteRecord: (id: string) => void
+  onNavigateHome: () => void
+}) {
+  const [namaKaryawan, setNamaKaryawan] = useState('')
+  const [nik, setNik] = useState('')
+  const [deptOption, setDeptOption] = useState<string>(departments[0])
+  const [customDept, setCustomDept] = useState('')
+  const [sectionOption, setSectionOption] = useState<string>(sectionsMap[departments[0]][0])
+  const [customSection, setCustomSection] = useState('')
+  const [jenisBaju, setJenisBaju] = useState(uniformTypes[0])
+  const [ukuran, setUkuran] = useState(uniformSizes[4])
+  const [jumlahStel, setJumlahStel] = useState(1)
+  const [noPR, setNoPR] = useState('PR-2024-JAI-120')
+  const [tglInput, setTglInput] = useState(new Date().toISOString().split('T')[0])
+  const [tglTerima, setTglTerima] = useState('')
+  const [keterangan, setKeterangan] = useState('')
+  const [searchQuery, setSearchQuery] = useState('')
+  const [selectedDept, setSelectedDept] = useState('ALL')
+  const [selectedStatus, setSelectedStatus] = useState<'all' | 'dipesan' | 'diterima'>('all')
+  const [selectedPR, setSelectedPR] = useState('ALL')
+  const [startDateInput, setStartDateInput] = useState('')
+  const [endDateInput, setEndDateInput] = useState('')
+  const [currentPage, setCurrentPage] = useState(1)
+  const [itemsPerPage] = useState(10)
+  const [isFormOpen, setIsFormOpen] = useState(true)
+  const [selectedIds, setSelectedIds] = useState<string[]>([])
+  const [editingRecord, setEditingRecord] = useState<UniformRecord | null>(null)
+
+  const uniquePRList = useMemo(() => Array.from(new Set(records.map((r) => r.noPR))).filter(Boolean).sort(), [records])
+  const uniqueDeptFilterList = useMemo(() => Array.from(new Set([...departments, ...records.map((r) => r.departemen)])).filter(Boolean), [records])
+
+  const filteredRecords = useMemo(() => {
+    return records.filter((item) => {
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase().trim()
+        const matchName = item.namaKaryawan.toLowerCase().includes(q)
+        const matchNik = item.nik.toLowerCase().includes(q)
+        const matchPR = item.noPR.toLowerCase().includes(q)
+        const matchDept = item.departemen.toLowerCase().includes(q)
+        const matchSection = item.section.toLowerCase().includes(q)
+        if (!matchName && !matchNik && !matchPR && !matchDept && !matchSection) return false
+      }
+      if (selectedDept !== 'ALL' && item.departemen !== selectedDept) return false
+      if (selectedPR !== 'ALL' && item.noPR !== selectedPR) return false
+      if (selectedStatus === 'dipesan' && item.tglTerima) return false
+      if (selectedStatus === 'diterima' && !item.tglTerima) return false
+      if (startDateInput && item.tglInput < startDateInput) return false
+      if (endDateInput && item.tglInput > endDateInput) return false
+      return true
+    })
+  }, [records, searchQuery, selectedDept, selectedStatus, selectedPR, startDateInput, endDateInput])
+
+  const totalPages = Math.max(1, Math.ceil(filteredRecords.length / itemsPerPage))
+  const paginatedRecords = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage
+    return filteredRecords.slice(start, start + itemsPerPage)
+  }, [filteredRecords, currentPage, itemsPerPage])
+
+  const handleDeptChange = (dept: string) => {
+    setDeptOption(dept)
+    if (dept === '__MANUAL__') {
+      setSectionOption('__MANUAL__')
+      return
+    }
+    const secs = sectionsMap[dept] || []
+    setSectionOption(secs.length ? secs[0] : '__MANUAL__')
+  }
+
+  const handleResetForm = () => {
+    setNamaKaryawan('')
+    setNik('')
+    setDeptOption(departments[0])
+    setCustomDept('')
+    setSectionOption(sectionsMap[departments[0]][0])
+    setCustomSection('')
+    setJenisBaju(uniformTypes[0])
+    setUkuran(uniformSizes[4])
+    setJumlahStel(1)
+    setTglTerima('')
+    setKeterangan('')
+  }
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!namaKaryawan.trim() || !nik.trim() || !noPR.trim()) {
+      alert('Nama Karyawan, NIK, dan Nomor PR wajib diisi.')
+      return
+    }
+
+    const resolvedDept = deptOption === '__MANUAL__' ? customDept.trim() : deptOption
+    const resolvedSection = sectionOption === '__MANUAL__' ? customSection.trim() : sectionOption
+
+    if (!resolvedDept || !resolvedSection) {
+      alert('Departemen dan section wajib diisi.')
+      return
+    }
+
+    const newRecord: UniformRecord = {
+      id: `rec-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+      namaKaryawan: namaKaryawan.trim(),
+      nik: nik.trim().toUpperCase(),
+      departemen: resolvedDept,
+      section: resolvedSection,
+      jenisBaju,
+      ukuran,
+      jumlahStel: Number(jumlahStel) || 1,
+      noPR: noPR.trim().toUpperCase(),
+      tglInput: tglInput || new Date().toISOString().split('T')[0],
+      tglTerima: tglTerima || null,
+      keterangan: keterangan.trim() || undefined,
+    }
+
+    onAddRecord(newRecord)
+    handleResetForm()
+  }
+
+  const toggleRecordSelection = (id: string) => {
+    setSelectedIds((prev) => (prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]))
+  }
+
+  const toggleSelectVisible = () => {
+    const visibleIds = paginatedRecords.map((record) => record.id)
+    const allSelected = visibleIds.every((id) => selectedIds.includes(id))
+    setSelectedIds((prev) => {
+      if (allSelected) {
+        return prev.filter((id) => !visibleIds.includes(id))
+      }
+      return Array.from(new Set([...prev, ...visibleIds]))
+    })
+  }
+
+  const markSelectedAsReceived = () => {
+    const today = new Date().toISOString().split('T')[0]
+    records.forEach((record) => {
+      if (selectedIds.includes(record.id) && !record.tglTerima) {
+        onUpdateRecord({ ...record, tglTerima: today })
+      }
+    })
+    setSelectedIds([])
+  }
+
+  const deleteSelected = () => {
+    selectedIds.forEach((id) => onDeleteRecord(id))
+    setSelectedIds([])
+  }
+
+  const handleQuickMarkReceived = (record: UniformRecord) => {
+    const today = new Date().toISOString().split('T')[0]
+    onUpdateRecord({ ...record, tglTerima: today })
+  }
+
+  const hasActiveFilters = searchQuery || selectedDept !== 'ALL' || selectedStatus !== 'all' || selectedPR !== 'ALL' || startDateInput || endDateInput
+
+  const resetFilters = () => {
+    setSearchQuery('')
+    setSelectedDept('ALL')
+    setSelectedStatus('all')
+    setSelectedPR('ALL')
+    setStartDateInput('')
+    setEndDateInput('')
+    setCurrentPage(1)
+  }
+
+  const formatDate = (value: string | null) => {
+    if (!value) return '-'
+    return new Date(`${value}T00:00:00`).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })
+  }
+
+  return (
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+      <div>
+        <button onClick={onNavigateHome} id="btn-back-to-home" className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-900 transition-colors mb-2 cursor-pointer">
+          <span className="text-sm">←</span>
+          <span>Kembali ke menu utama</span>
+        </button>
+
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <div className="text-[11px] font-bold tracking-widest uppercase text-blue-700">TRANSAKSI / DISTRIBUSI</div>
+            <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight">Data Seragam</h2>
+            <p className="text-xs text-slate-500 mt-1">Catat ukuran dan distribusi seragam kerja karyawan berbasis Nomor PR.</p>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2">
+            <button className="inline-flex items-center gap-1.5 rounded-xl border border-amber-300 bg-white px-3.5 py-2 text-xs font-semibold text-amber-900 shadow-sm transition-colors hover:bg-amber-50">
+              <Upload className="h-3.5 w-3.5 text-amber-600" />
+              <span>Upload Pengajuan</span>
+            </button>
+            <button className="inline-flex items-center gap-1.5 rounded-xl border border-emerald-300 bg-white px-3.5 py-2 text-xs font-semibold text-emerald-900 shadow-sm transition-colors hover:bg-emerald-50">
+              <PackageCheck className="h-3.5 w-3.5 text-emerald-600" />
+              <span>Update Penerimaan</span>
+            </button>
+            <button className="inline-flex items-center gap-1.5 rounded-xl bg-[#143254] px-3.5 py-2 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-[#1d4470]">
+              <FileSpreadsheet className="h-3.5 w-3.5" />
+              <span>Ekspor Excel</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-sm">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+          <div className="relative w-full lg:max-w-md">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
+            <input
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Cari nama, NIK, PR, departemen, section..."
+              className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2.5 pl-9 pr-3 text-sm text-slate-700 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20"
+            />
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2">
+            <button onClick={() => setIsFormOpen((v) => !v)} className="inline-flex items-center gap-2 rounded-xl bg-slate-100 px-3 py-2 text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-200">
+              <Filter className="h-3.5 w-3.5" />
+              <span>{isFormOpen ? 'Sembunyikan Form' : 'Tampilkan Form'}</span>
+            </button>
+            {hasActiveFilters && (
+              <button onClick={resetFilters} className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-50">
+                <X className="h-3.5 w-3.5" />
+                <span>Reset</span>
+              </button>
+            )}
+          </div>
+        </div>
+
+        {isFormOpen && (
+          <form onSubmit={handleSubmit} className="mt-5 grid gap-4 rounded-2xl border border-slate-200 bg-slate-50 p-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            <div className="md:col-span-2 lg:col-span-1">
+              <label className="mb-1.5 block text-[11px] font-semibold text-slate-700">Nama Karyawan</label>
+              <input value={namaKaryawan} onChange={(e) => setNamaKaryawan(e.target.value)} className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm" placeholder="Nama lengkap" />
+            </div>
+            <div>
+              <label className="mb-1.5 block text-[11px] font-semibold text-slate-700">NIK</label>
+              <input value={nik} onChange={(e) => setNik(e.target.value)} className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm" placeholder="JAI-xxxx" />
+            </div>
+            <div>
+              <label className="mb-1.5 block text-[11px] font-semibold text-slate-700">Nomor PR</label>
+              <input value={noPR} onChange={(e) => setNoPR(e.target.value)} className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm" placeholder="PR-2024-JAI-120" />
+            </div>
+            <div>
+              <label className="mb-1.5 block text-[11px] font-semibold text-slate-700">Departemen</label>
+              <select value={deptOption} onChange={(e) => handleDeptChange(e.target.value)} className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm">
+                {departments.map((dept) => (
+                  <option key={dept} value={dept}>{dept}</option>
+                ))}
+                <option value="__MANUAL__">Manual input...</option>
+              </select>
+            </div>
+            {deptOption === '__MANUAL__' && (
+              <div>
+                <label className="mb-1.5 block text-[11px] font-semibold text-slate-700">Custom Departemen</label>
+                <input value={customDept} onChange={(e) => setCustomDept(e.target.value)} className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm" placeholder="Masukkan departemen" />
+              </div>
+            )}
+            <div>
+              <label className="mb-1.5 block text-[11px] font-semibold text-slate-700">Section</label>
+              <select value={sectionOption} onChange={(e) => setSectionOption(e.target.value)} className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm">
+                {((deptOption === '__MANUAL__' ? ['Manual'] : sectionsMap[deptOption] || [])).map((section) => (
+                  <option key={section} value={section}>{section}</option>
+                ))}
+                {deptOption !== '__MANUAL__' && <option value="__MANUAL__">Manual input...</option>}
+              </select>
+            </div>
+            {sectionOption === '__MANUAL__' && (
+              <div>
+                <label className="mb-1.5 block text-[11px] font-semibold text-slate-700">Custom Section</label>
+                <input value={customSection} onChange={(e) => setCustomSection(e.target.value)} className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm" placeholder="Masukkan section" />
+              </div>
+            )}
+            <div>
+              <label className="mb-1.5 block text-[11px] font-semibold text-slate-700">Jenis Baju</label>
+              <select value={jenisBaju} onChange={(e) => setJenisBaju(e.target.value)} className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm">
+                {uniformTypes.map((type) => (
+                  <option key={type} value={type}>{type}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="mb-1.5 block text-[11px] font-semibold text-slate-700">Ukuran</label>
+              <select value={ukuran} onChange={(e) => setUkuran(e.target.value)} className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm">
+                {uniformSizes.map((size) => (
+                  <option key={size} value={size}>{size}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="mb-1.5 block text-[11px] font-semibold text-slate-700">Jumlah Stel</label>
+              <input type="number" min={1} value={jumlahStel} onChange={(e) => setJumlahStel(Number(e.target.value || 1))} className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm" />
+            </div>
+            <div>
+              <label className="mb-1.5 block text-[11px] font-semibold text-slate-700">Tgl Input</label>
+              <input type="date" value={tglInput} onChange={(e) => setTglInput(e.target.value)} className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm" />
+            </div>
+            <div>
+              <label className="mb-1.5 block text-[11px] font-semibold text-slate-700">Tanggal Terima</label>
+              <input type="date" value={tglTerima} onChange={(e) => setTglTerima(e.target.value)} className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm" />
+            </div>
+            <div className="md:col-span-2 lg:col-span-3 xl:col-span-4">
+              <label className="mb-1.5 block text-[11px] font-semibold text-slate-700">Keterangan</label>
+              <textarea value={keterangan} onChange={(e) => setKeterangan(e.target.value)} rows={2} className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm" placeholder="Catatan tambahan..." />
+            </div>
+            <div className="md:col-span-2 lg:col-span-3 xl:col-span-4 flex justify-end gap-2">
+              <button type="button" onClick={handleResetForm} className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">Reset</button>
+              <button type="submit" className="rounded-xl bg-[#143254] px-4 py-2 text-sm font-semibold text-white hover:bg-[#1d4470]">Simpan Data</button>
+            </div>
+          </form>
+        )}
+      </div>
+
+      <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+        <div className="flex flex-col gap-3 border-b border-slate-200 p-4 xl:flex-row xl:items-center xl:justify-between">
+          <div className="flex flex-wrap items-center gap-2">
+            <button onClick={() => setSelectedStatus('all')} className={`rounded-lg px-3 py-1.5 text-xs font-semibold ${selectedStatus === 'all' ? 'bg-[#143254] text-white' : 'bg-slate-100 text-slate-700'}`}>Semua</button>
+            <button onClick={() => setSelectedStatus('dipesan')} className={`rounded-lg px-3 py-1.5 text-xs font-semibold ${selectedStatus === 'dipesan' ? 'bg-[#143254] text-white' : 'bg-slate-100 text-slate-700'}`}>Dipesan</button>
+            <button onClick={() => setSelectedStatus('diterima')} className={`rounded-lg px-3 py-1.5 text-xs font-semibold ${selectedStatus === 'diterima' ? 'bg-[#143254] text-white' : 'bg-slate-100 text-slate-700'}`}>Diterima</button>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2 text-xs text-slate-600">
+            <label className="flex items-center gap-2">
+              <span>Dept</span>
+              <select value={selectedDept} onChange={(e) => setSelectedDept(e.target.value)} className="rounded-lg border border-slate-200 bg-slate-50 px-2 py-1.5">
+                <option value="ALL">ALL</option>
+                {uniqueDeptFilterList.map((dept) => (
+                  <option key={dept} value={dept}>{dept}</option>
+                ))}
+              </select>
+            </label>
+            <label className="flex items-center gap-2">
+              <span>PR</span>
+              <select value={selectedPR} onChange={(e) => setSelectedPR(e.target.value)} className="rounded-lg border border-slate-200 bg-slate-50 px-2 py-1.5">
+                <option value="ALL">ALL</option>
+                {uniquePRList.map((pr) => (
+                  <option key={pr} value={pr}>{pr}</option>
+                ))}
+              </select>
+            </label>
+            <label className="flex items-center gap-2">
+              <span>From</span>
+              <input type="date" value={startDateInput} onChange={(e) => setStartDateInput(e.target.value)} className="rounded-lg border border-slate-200 bg-slate-50 px-2 py-1.5" />
+            </label>
+            <label className="flex items-center gap-2">
+              <span>To</span>
+              <input type="date" value={endDateInput} onChange={(e) => setEndDateInput(e.target.value)} className="rounded-lg border border-slate-200 bg-slate-50 px-2 py-1.5" />
+            </label>
+          </div>
+        </div>
+
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[1400px] text-left text-sm">
+            <thead className="bg-slate-50 text-slate-600">
+              <tr>
+                <th className="w-10 px-3 py-3 text-center">
+                  <input type="checkbox" checked={paginatedRecords.length > 0 && paginatedRecords.every((record) => selectedIds.includes(record.id))} onChange={toggleSelectVisible} className="h-4 w-4 rounded border-slate-300 accent-blue-600" />
+                </th>
+                <th className="px-4 py-3 font-semibold">No. PR</th>
+                <th className="px-4 py-3 font-semibold">NIK</th>
+                <th className="px-4 py-3 font-semibold">Nama Karyawan</th>
+                <th className="px-4 py-3 font-semibold">Departemen &amp; Section</th>
+                <th className="px-4 py-3 font-semibold">Jenis Baju</th>
+                <th className="px-4 py-3 font-semibold">Ukuran</th>
+                <th className="px-4 py-3 font-semibold">Jumlah</th>
+                <th className="px-4 py-3 font-semibold">Tgl Input</th>
+                <th className="px-4 py-3 font-semibold">Tgl Terima</th>
+                <th className="px-4 py-3 font-semibold">Status</th>
+                <th className="px-4 py-3 font-semibold">Keterangan</th>
+                <th className="px-4 py-3 font-semibold">Aksi</th>
+              </tr>
+            </thead>
+            <tbody>
+              {paginatedRecords.map((record) => (
+                <tr key={record.id} className={`border-t border-slate-200 hover:bg-slate-50/80 ${selectedIds.includes(record.id) ? 'bg-blue-50/40' : ''}`}>
+                  <td className="px-3 py-3 text-center">
+                    <input type="checkbox" checked={selectedIds.includes(record.id)} onChange={() => toggleRecordSelection(record.id)} className="h-4 w-4 rounded border-slate-300 accent-blue-600" />
+                  </td>
+                  <td className="px-4 py-3 font-semibold text-blue-700">{record.noPR}</td>
+                  <td className="px-4 py-3 text-slate-700">{record.nik}</td>
+                  <td className="px-4 py-3 font-medium text-slate-800">{record.namaKaryawan}</td>
+                  <td className="px-4 py-3 text-slate-700">
+                    <div>{record.departemen}</div>
+                    <div className="mt-0.5 text-xs text-slate-500">{record.section}</div>
+                  </td>
+                  <td className="px-4 py-3 text-slate-700">{record.jenisBaju}</td>
+                  <td className="px-4 py-3">
+                    <span className="inline-flex rounded-lg border border-blue-200 bg-blue-50 px-2 py-1 text-xs font-semibold text-blue-700">{record.ukuran}</span>
+                  </td>
+                  <td className="px-4 py-3 text-slate-700">{record.jumlahStel} stel</td>
+                  <td className="px-4 py-3 text-slate-700">{formatDate(record.tglInput)}</td>
+                  <td className="px-4 py-3 text-slate-700">{formatDate(record.tglTerima)}</td>
+                  <td className="px-4 py-3">
+                    <span className={`inline-flex rounded-full border px-2.5 py-1 text-[11px] font-semibold ${record.tglTerima ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : 'border-amber-200 bg-amber-50 text-amber-700'}`}>
+                      {record.tglTerima ? 'Selesai' : 'Dipesan'}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 text-slate-600">{record.keterangan || '-'}</td>
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-2">
+                      {!record.tglTerima && (
+                        <button onClick={() => handleQuickMarkReceived(record)} className="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-2 py-1 text-[11px] font-semibold text-emerald-700 hover:bg-emerald-100">
+                          <CheckSquare className="h-3.5 w-3.5" />
+                          Terima
+                        </button>
+                      )}
+                      <button onClick={() => setEditingRecord(record)} className="inline-flex items-center justify-center rounded-md border border-slate-200 bg-white p-1.5 text-slate-600 hover:bg-slate-100 hover:text-slate-900" title="Edit data">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-4 w-4"><path d="M12 20h9" /><path d="M16.5 3.5a2.1 2.1 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5Z" /></svg>
+                      </button>
+                      <button onClick={() => onDeleteRecord(record.id)} className="inline-flex items-center justify-center rounded-md border border-red-200 bg-red-50 p-1.5 text-red-600 hover:bg-red-100" title="Hapus data">
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        <div className="border-t border-slate-200 bg-slate-50/70 p-3">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-2 text-sm text-slate-700">
+              <input type="checkbox" checked={paginatedRecords.length > 0 && paginatedRecords.every((record) => selectedIds.includes(record.id))} onChange={toggleSelectVisible} className="h-4 w-4 rounded border-slate-300 accent-blue-600" />
+              <span>{selectedIds.length} data terpilih</span>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2">
+              <button onClick={markSelectedAsReceived} disabled={selectedIds.length === 0} className="inline-flex items-center justify-center rounded-xl bg-emerald-600 px-3 py-2 text-xs font-semibold text-white hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-40">
+                <CheckCircle2 className="mr-1.5 h-4 w-4" />
+                Tandai Diterima Hari Ini
+              </button>
+              <button onClick={deleteSelected} disabled={selectedIds.length === 0} className="inline-flex items-center justify-center rounded-xl bg-red-600 px-3 py-2 text-xs font-semibold text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-40">
+                <Trash2 className="mr-1.5 h-4 w-4" />
+                Hapus Terpilih
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex flex-col justify-between gap-3 border-t border-slate-200 bg-slate-50/60 p-4 sm:flex-row sm:items-center">
+          <div className="text-xs text-slate-500">Menampilkan {filteredRecords.length} data</div>
+          <div className="flex items-center gap-2">
+            <button onClick={() => setCurrentPage((p) => Math.max(1, p - 1))} disabled={currentPage === 1} className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-slate-700 disabled:opacity-40">
+              <ChevronLeft className="h-3.5 w-3.5" /> Prev
+            </button>
+            <span className="text-xs font-medium text-slate-700">Page {currentPage} / {totalPages}</span>
+            <button onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))} disabled={currentPage >= totalPages} className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-slate-700 disabled:opacity-40">
+              Next <ChevronRight className="h-3.5 w-3.5" />
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {editingRecord && (
+        <EditRecordModal
+          record={editingRecord}
+          onClose={() => setEditingRecord(null)}
+          onSave={(updated) => {
+            onUpdateRecord(updated)
+            setEditingRecord(null)
+          }}
+          onDelete={() => {
+            onDeleteRecord(editingRecord.id)
+            setEditingRecord(null)
+          }}
+        />
+      )}
+    </div>
+  )
+}
