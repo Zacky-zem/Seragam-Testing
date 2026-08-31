@@ -1,6 +1,7 @@
 'use client'
 
 import React from 'react'
+import * as XLSX from 'xlsx'
 import { ArrowRight, Boxes, CheckCircle2, Clock, FileDown, FileSpreadsheet, LayoutDashboard, PackageCheck, Shirt } from 'lucide-react'
 import type { UniformRecord } from './types'
 
@@ -10,6 +11,13 @@ export function LandingPage({ records, onNavigateToTracking }: { records: Unifor
   const pendingRecords = records.filter((r) => !r.tglTerima)
   const receivedRecords = records.filter((r) => !!r.tglTerima)
   const totalStel = records.reduce((acc, curr) => acc + (curr.jumlahStel || 1), 0)
+  const downloadTemplate = (kind: 'pengajuan' | 'penerimaan') => {
+    const rows = kind === 'pengajuan' ? [{ noPR: '', namaKaryawan: '', NIK: '', departemen: '', section: '', jenisBaju: '', ukuran: '', jumlahStel: 1, tglInput: '', keterangan: '' }] : [{ noPR: '', tglTerima: '', keterangan: '' }]
+    const sheet = XLSX.utils.json_to_sheet(rows)
+    const book = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(book, sheet, 'Template')
+    XLSX.writeFile(book, `template-${kind}.xlsx`)
+  }
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-7">
@@ -85,11 +93,11 @@ export function LandingPage({ records, onNavigateToTracking }: { records: Unifor
         </div>
 
         <div className="flex flex-wrap items-center gap-2.5 w-full sm:w-auto">
-          <button className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold bg-white text-slate-800 border border-slate-300 hover:bg-slate-50 hover:border-slate-400 transition-colors shadow-2xs cursor-pointer">
+          <button onClick={() => downloadTemplate('pengajuan')} className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold bg-white text-slate-800 border border-slate-300 hover:bg-slate-50 hover:border-slate-400 transition-colors shadow-2xs cursor-pointer">
             <FileDown className="w-4 h-4 text-blue-600" />
             <span>Template Pengajuan (.xlsx)</span>
           </button>
-          <button className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold bg-white text-slate-800 border border-slate-300 hover:bg-slate-50 hover:border-slate-400 transition-colors shadow-2xs cursor-pointer">
+          <button onClick={() => downloadTemplate('penerimaan')} className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold bg-white text-slate-800 border border-slate-300 hover:bg-slate-50 hover:border-slate-400 transition-colors shadow-2xs cursor-pointer">
             <FileSpreadsheet className="w-4 h-4 text-emerald-600" />
             <span>Template Penerimaan (.xlsx)</span>
           </button>

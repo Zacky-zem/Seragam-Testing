@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useMemo, useState } from 'react'
+import React, { useMemo, useRef, useState } from 'react'
 import {
   CheckCircle2,
   CheckSquare,
@@ -13,7 +13,11 @@ import {
   Trash2,
   Upload,
   X,
+  Download,
+  Minimize2,
+  ChevronDown,
 } from 'lucide-react'
+import * as XLSX from 'xlsx'
 import { departments, sectionsMap, uniformSizes, uniformTypes } from './data'
 import type { UniformRecord } from './types'
 import { EditRecordModal } from './edit-record-modal'
@@ -55,6 +59,8 @@ export function TrackingPage({
   const [isFormOpen, setIsFormOpen] = useState(true)
   const [selectedIds, setSelectedIds] = useState<string[]>([])
   const [editingRecord, setEditingRecord] = useState<UniformRecord | null>(null)
+  const uploadInputRef = useRef<HTMLInputElement>(null)
+  const [openFilter, setOpenFilter] = useState<'dept' | 'pr' | null>(null)
 
   const uniquePRList = useMemo(() => Array.from(new Set(records.map((r) => r.noPR))).filter(Boolean).sort(), [records])
   const uniqueDeptFilterList = useMemo(() => Array.from(new Set([...departments, ...records.map((r) => r.departemen)])).filter(Boolean), [records])
@@ -196,6 +202,41 @@ export function TrackingPage({
     return new Date(`${value}T00:00:00`).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })
   }
 
+  const downloadTemplate = (kind: 'pengajuan' | 'penerimaan') => {
+    const rows = kind === 'pengajuan'
+      ? [{ noPR: '', namaKaryawan: '', NIK: '', departemen: '', section: '', jenisBaju: '', ukuran: '', jumlahStel: 1, tglInput: '', keterangan: '' }]
+      : [{ noPR: '', tglTerima: '', keterangan: '' }]
+    const sheet = XLSX.utils.json_to_sheet(rows)
+    const book = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(book, sheet, 'Template')
+    XLSX.writeFile(book, `template-${kind}.xlsx`)
+  }
+
+  const exportExcel = () => {
+    const rows = filteredRecords.map((record) => ({
+      'No. PR': record.noPR, NIK: record.nik, 'Nama Karyawan': record.namaKaryawan,
+      Departemen: record.departemen, Section: record.section, 'Jenis Baju': record.jenisBaju,
+      Ukuran: record.ukuran, Jumlah: record.jumlahStel, 'Tgl Input': record.tglInput,
+      'Tgl Terima': record.tglTerima || '', Status: record.tglTerima ? 'Diterima' : 'Dipesan', Keterangan: record.keterangan || '',
+    }))
+    const sheet = XLSX.utils.json_to_sheet(rows)
+    const book = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(book, sheet, 'Data Seragam')
+    XLSX.writeFile(book, `data-seragam-${new Date().toISOString().slice(0, 10)}.xlsx`)
+  }
+
+  const importPengajuan = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+    const data = await file.arrayBuffer()
+    const workbook = XLSX.read(data)
+    const rows = XLSX.utils.sheet_to_json<Record<string, unknown>>(workbook.Sheets[workbook.SheetNames[0]])
+    rows.forEach((row) => {
+      if (row.noPR && row.namaKaryawan) onAddRecord({ id: `import-${Date.now()}-${Math.random()}`, namaKaryawan: String(row.namaKaryawan), nik: String(row.NIK ?? row.nik ?? ''), departemen: String(row.departemen ?? ''), section: String(row.section ?? ''), jenisBaju: String(row.jenisBaju ?? row.jenisSeragam ?? uniformTypes[0]), ukuran: String(row.ukuran ?? uniformSizes[4]), jumlahStel: Number(row.jumlahStel ?? row.jumlah ?? 1), noPR: String(row.noPR), tglInput: String(row.tglInput ?? ''), tglTerima: null, keterangan: String(row.keterangan ?? '') })
+    })
+    event.target.value = ''
+  }
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
       <div>
@@ -212,15 +253,16 @@ export function TrackingPage({
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
-            <button className="inline-flex items-center gap-1.5 rounded-xl border border-amber-300 bg-white px-3.5 py-2 text-xs font-semibold text-amber-900 shadow-sm transition-colors hover:bg-amber-50">
+            <input ref={uploadInputRef} type="file" accept=".xlsx,.xls,.csv" onChange={importPengajuan} className="hidden" />
+            <button onClick={() => uploadInputRef.current?.click()} className="inline-flex items-center gap-1.5 rounded-xl border border-amber-300 bg-white px-3.5 py-2 text-xs font-semibold text-amber-900 shadow-sm transition-colors hover:bg-amber-50">
               <Upload className="h-3.5 w-3.5 text-amber-600" />
               <span>Upload Pengajuan</span>
             </button>
-            <button className="inline-flex items-center gap-1.5 rounded-xl border border-emerald-300 bg-white px-3.5 py-2 text-xs font-semibold text-emerald-900 shadow-sm transition-colors hover:bg-emerald-50">
+            <button onClick={markSelectedAsReceived} disabled={selectedIds.length === 0} className="inline-flex items-center gap-1.5 rounded-xl border border-emerald-300 bg-white px-3.5 py-2 text-xs font-semibold text-emerald-900 shadow-sm transition-colors hover:bg-emerald-50 disabled:cursor-not-allowed disabled:opacity-50">
               <PackageCheck className="h-3.5 w-3.5 text-emerald-600" />
               <span>Update Penerimaan</span>
             </button>
-            <button className="inline-flex items-center gap-1.5 rounded-xl bg-[#143254] px-3.5 py-2 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-[#1d4470]">
+            <button onClick={exportExcel} className="inline-flex items-center gap-1.5 rounded-xl bg-[#143254] px-3.5 py-2 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-[#1d4470]">
               <FileSpreadsheet className="h-3.5 w-3.5" />
               <span>Ekspor Excel</span>
             </button>
@@ -230,20 +272,10 @@ export function TrackingPage({
 
       <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-sm">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-          <div className="relative w-full lg:max-w-md">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
-            <input
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Cari nama, NIK, PR, departemen, section..."
-              className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2.5 pl-9 pr-3 text-sm text-slate-700 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20"
-            />
-          </div>
-
           <div className="flex flex-wrap items-center gap-2">
-            <button onClick={() => setIsFormOpen((v) => !v)} className="inline-flex items-center gap-2 rounded-xl bg-slate-100 px-3 py-2 text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-200">
-              <Filter className="h-3.5 w-3.5" />
-              <span>{isFormOpen ? 'Sembunyikan Form' : 'Tampilkan Form'}</span>
+            <button type="button" aria-label={isFormOpen ? 'Minimize form' : 'Tampilkan form'} title={isFormOpen ? 'Minimize form' : 'Tampilkan form'} onClick={() => setIsFormOpen((v) => !v)} className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 shadow-sm transition-colors hover:bg-slate-100 hover:text-slate-900">
+              <Minimize2 className={`h-3.5 w-3.5 transition-transform ${isFormOpen ? '' : 'rotate-180'}`} />
+              <span className="sr-only">{isFormOpen ? 'Sembunyikan Form' : 'Tampilkan Form'}</span>
             </button>
             {hasActiveFilters && (
               <button onClick={resetFilters} className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-50">
@@ -340,6 +372,10 @@ export function TrackingPage({
 
       <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
         <div className="flex flex-col gap-3 border-b border-slate-200 p-4 xl:flex-row xl:items-center xl:justify-between">
+          <div className="relative w-full xl:max-w-md">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 h-4 w-4" />
+            <input value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Cari nama, NIK, PR, departemen, section..." className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2.5 pl-9 pr-3 text-sm text-slate-700 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20" />
+          </div>
           <div className="flex flex-wrap items-center gap-2">
             <button onClick={() => setSelectedStatus('all')} className={`rounded-lg px-3 py-1.5 text-xs font-semibold ${selectedStatus === 'all' ? 'bg-[#143254] text-white' : 'bg-slate-100 text-slate-700'}`}>Semua</button>
             <button onClick={() => setSelectedStatus('dipesan')} className={`rounded-lg px-3 py-1.5 text-xs font-semibold ${selectedStatus === 'dipesan' ? 'bg-[#143254] text-white' : 'bg-slate-100 text-slate-700'}`}>Dipesan</button>
