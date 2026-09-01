@@ -1,6 +1,6 @@
 'use client'
 
-import { Calendar, Home, Layers, LogOut, Shirt } from 'lucide-react'
+import { Calendar, Home, Layers, LogOut } from 'lucide-react'
 import type { UserSession } from './types'
 
 export function Navbar({ currentView, onNavigate, user, onLogout }: { currentView: 'landing' | 'tracking'; onNavigate: (view: 'landing' | 'tracking') => void; user: UserSession; onLogout: () => void }) {
@@ -13,18 +13,12 @@ export function Navbar({ currentView, onNavigate, user, onLogout }: { currentVie
   return (
     <header className="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-xs no-print">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 flex items-center justify-between">
-        <div onClick={() => onNavigate('landing')} className="flex items-center gap-3.5 cursor-pointer group select-none" id="navbar-brand-logo">
-          <div className="w-10 h-10 rounded-xl bg-[#143254] flex items-center justify-center text-white shadow-xs group-hover:bg-[#1d4470] transition-colors">
-            <Shirt className="w-5 h-5 stroke-[2.2]" />
-          </div>
+        <div onClick={() => onNavigate('landing')} className="flex cursor-pointer select-none items-center gap-3.5 group" id="navbar-brand-logo">
+          <img src="/yazaki-logo.jpeg" alt="Yazaki" className="h-9 w-auto object-contain object-left" />
+          <div className="h-8 w-px bg-border" />
           <div>
-            <h1 className="text-base font-bold text-slate-900 leading-tight tracking-tight flex items-center gap-2">
-              Data Seragam
-              <span className="text-[10px] font-semibold tracking-wider uppercase px-2 py-0.5 bg-blue-50 text-blue-700 rounded-full border border-blue-200">
-                PT JAI
-              </span>
-            </h1>
-            <p className="text-xs font-medium text-slate-500">PT Jatim Autocomp Indonesia</p>
+            <h1 className="flex items-center gap-2 text-base font-bold leading-tight tracking-tight text-foreground">Data Seragam <span className="rounded-full border border-accent/30 bg-accent/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-accent-foreground">PT JAI</span></h1>
+            <p className="text-xs font-medium text-muted-foreground">PT Jatim Autocomp Indonesia</p>
           </div>
         </div>
 
