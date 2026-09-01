@@ -25,7 +25,7 @@ export function LandingPage({ records, onNavigateToTracking }: { records: Unifor
 
   return (
     <div className="mx-auto flex max-w-7xl flex-col gap-8 px-4 py-8 sm:px-6 lg:px-8">
-      <section className="overflow-hidden rounded-[2rem] bg-primary text-primary-foreground shadow-xl">
+      <section className="overflow-hidden rounded-[2rem] bg-foreground text-background shadow-xl">
         <div className="grid gap-8 p-6 sm:p-10 lg:grid-cols-[1.1fr_.9fr] lg:items-center">
           <div className="flex flex-col gap-5">
             <div className="flex items-center gap-2 text-sm font-semibold text-accent"><Sparkles data-icon="inline-start" /> PT. Jatim Autocomp Indonesia</div>
@@ -33,7 +33,7 @@ export function LandingPage({ records, onNavigateToTracking }: { records: Unifor
               <h1 className="max-w-2xl text-balance text-3xl font-bold tracking-tight sm:text-5xl">Data seragam lebih rapi, distribusi lebih terkendali.</h1>
               <p className="max-w-xl text-pretty leading-7 text-primary-foreground/75">Kelola pengajuan, ukuran baju dan celana, hingga penerimaan seragam karyawan PT Jatim Autocomp Indonesia dalam satu dashboard.</p>
             </div>
-            <button onClick={onNavigateToTracking} className="inline-flex w-fit items-center gap-2 rounded-xl bg-accent px-5 py-3 text-sm font-bold text-accent-foreground transition-transform hover:-translate-y-0.5"><span>Kelola Data Seragam</span><ArrowRight data-icon="inline-end" /></button>
+            <button onClick={onNavigateToTracking} className="inline-flex w-fit items-center gap-2 rounded-xl border-2 border-foreground bg-foreground px-5 py-3 text-sm font-bold text-background shadow-[0_3px_0_var(--muted-foreground)] transition-colors hover:bg-background hover:text-foreground active:translate-y-px active:shadow-none"><span>Kelola Data Seragam</span><ArrowRight data-icon="inline-end" /></button>
           </div>
           <div className="grid grid-cols-2 gap-3 sm:gap-4">
             <Stat label="Total pengajuan" value={records.length} icon={<Shirt />} />
@@ -61,7 +61,7 @@ export function LandingPage({ records, onNavigateToTracking }: { records: Unifor
 }
 
 function Stat({ label, value, icon }: { label: string; value: number; icon: React.ReactNode }) {
-  return <div className="rounded-2xl border border-primary-foreground/10 bg-primary-foreground/10 p-4"><div className="mb-5 flex items-center justify-between text-primary-foreground/65"><span className="text-xs font-medium">{label}</span><span className="text-accent">{icon}</span></div><strong className="text-3xl">{value}</strong></div>
+  return <div className="rounded-2xl border landing-stat-card border-foreground/10 bg-foreground/90 p-4"><div className="mb-5 flex items-center justify-between text-primary-foreground/65"><span className="text-xs font-medium">{label}</span><span className="text-accent">{icon}</span></div><strong className="text-3xl">{value}</strong></div>
 }
 
 function ChartCard({ title, description, src }: { title: string; description: string; src: string }) {
