@@ -2,17 +2,21 @@
 
 import React from 'react'
 import * as XLSX from 'xlsx'
-import { ArrowRight, Boxes, CheckCircle2, Clock, FileDown, FileSpreadsheet, LayoutDashboard, PackageCheck, Shirt } from 'lucide-react'
+import { ArrowRight, CheckCircle2, FileDown, FileSpreadsheet, LayoutDashboard, Ruler, Shirt, Sparkles, Truck } from 'lucide-react'
 import type { UniformRecord } from './types'
 
+const SHIRT_CHART = 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-OPZFAIyIy2zr3MuMQzuc1rhDI1zaAy.png'
+const TROUSER_CHART = 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-xYvbCQ1rfHJNGmV266QFERx1fGjcFv.png'
+
 export function LandingPage({ records, onNavigateToTracking }: { records: UniformRecord[]; onNavigateToTracking: () => void }) {
-  const totalRecords = records.length
-  const uniquePRs = new Set(records.map((r) => r.noPR)).size
-  const pendingRecords = records.filter((r) => !r.tglTerima)
-  const receivedRecords = records.filter((r) => !!r.tglTerima)
-  const totalStel = records.reduce((acc, curr) => acc + (curr.jumlahStel || 1), 0)
+  const pending = records.filter((record) => !record.tglTerima).length
+  const received = records.filter((record) => Boolean(record.tglTerima)).length
+  const totalStel = records.reduce((total, record) => total + (record.jumlahStel || 1), 0)
+
   const downloadTemplate = (kind: 'pengajuan' | 'penerimaan') => {
-    const rows = kind === 'pengajuan' ? [{ noPR: '', namaKaryawan: '', NIK: '', departemen: '', section: '', jenisBaju: '', ukuran: '', jumlahStel: 1, tglInput: '', keterangan: '' }] : [{ noPR: '', tglTerima: '', keterangan: '' }]
+    const rows = kind === 'pengajuan'
+      ? [{ noPR: '', namaKaryawan: '', NIK: '', departemen: '', section: '', jenisBaju: '', ukuran: '', ukuranCelana: '', jumlahStel: 1, tglInput: '', keterangan: '' }]
+      : [{ noPR: '', tglTerima: '', keterangan: '' }]
     const sheet = XLSX.utils.json_to_sheet(rows)
     const book = XLSX.utils.book_new()
     XLSX.utils.book_append_sheet(book, sheet, 'Template')
@@ -20,91 +24,46 @@ export function LandingPage({ records, onNavigateToTracking }: { records: Unifor
   }
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-7">
-      <div>
-        <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">Menu Utama & Dashboard Seragam</h2>
-        <p className="text-sm text-slate-500 mt-1"></p>
-      </div>
-
-      <div className="bg-[#143254] rounded-2xl text-white p-6 sm:p-8 shadow-sm relative overflow-hidden">
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
-          <div className="md:col-span-8 space-y-2.5">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-white/10 text-blue-100 text-xs font-semibold">
-              <span>PT JATIM AUTOCOMP INDONESIA</span>
+    <div className="mx-auto flex max-w-7xl flex-col gap-8 px-4 py-8 sm:px-6 lg:px-8">
+      <section className="overflow-hidden rounded-[2rem] bg-primary text-primary-foreground shadow-xl">
+        <div className="grid gap-8 p-6 sm:p-10 lg:grid-cols-[1.1fr_.9fr] lg:items-center">
+          <div className="flex flex-col gap-5">
+            <div className="flex items-center gap-2 text-sm font-semibold text-accent"><Sparkles data-icon="inline-start" /> PT. Jatim Autocomp Indonesia</div>
+            <div className="flex flex-col gap-3">
+              <h1 className="max-w-2xl text-balance text-3xl font-bold tracking-tight sm:text-5xl">Data seragam lebih rapi, distribusi lebih terkendali.</h1>
+              <p className="max-w-xl text-pretty leading-7 text-primary-foreground/75">Kelola pengajuan, ukuran baju dan celana, hingga penerimaan seragam karyawan PT Jatim Autocomp Indonesia dalam satu dashboard.</p>
             </div>
-            <h3 className="text-xl sm:text-2xl font-extrabold text-white">Landing Page</h3>
-            <p className="text-sm text-blue-100/90 leading-relaxed max-w-xl">
-              Alur pemantauan distribusi seragam karyawan akurat, cepat, dan mudah digunakan.
-            </p>
+            <button onClick={onNavigateToTracking} className="inline-flex w-fit items-center gap-2 rounded-xl bg-accent px-5 py-3 text-sm font-bold text-accent-foreground transition-transform hover:-translate-y-0.5"><span>Kelola Data Seragam</span><ArrowRight data-icon="inline-end" /></button>
           </div>
-          <div className="md:col-span-4 md:border-l md:border-white/15 md:pl-6 flex flex-row md:flex-col justify-between items-center md:items-start gap-3">
-            <div>
-            </div>
+          <div className="grid grid-cols-2 gap-3 sm:gap-4">
+            <Stat label="Total pengajuan" value={records.length} icon={<Shirt />} />
+            <Stat label="Menunggu" value={pending} icon={<Truck />} />
+            <Stat label="Sudah diterima" value={received} icon={<CheckCircle2 />} />
+            <Stat label="Total stel" value={totalStel} icon={<Ruler />} />
           </div>
         </div>
-      </div>
+      </section>
 
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5 sm:gap-4">
-        <KpiCard label="Dipesan" value={pendingRecords.length} icon={<Clock className="w-4 h-4" />} colors="bg-amber-50 text-amber-700" secondary="text-amber-600" />
-        <KpiCard label="Diterima" value={receivedRecords.length} icon={<CheckCircle2 className="w-4 h-4" />} colors="bg-emerald-50 text-emerald-700" secondary="text-emerald-600" />
-        <KpiCard label="Total Stel" value={totalStel} icon={<PackageCheck className="w-4 h-4" />} colors="bg-indigo-50 text-indigo-700" secondary="text-slate-900" />
-      </div>
-
-      <div className="space-y-3">
-        <div className="text-sm font-bold text-slate-800">Akses Menu Utama</div>
-        <div onClick={onNavigateToTracking} className="group bg-white hover:bg-slate-50/80 border-2 border-blue-600/30 hover:border-blue-600 rounded-2xl p-6 sm:p-8 shadow-xs hover:shadow-md transition-all cursor-pointer flex flex-col sm:flex-row sm:items-center justify-between gap-6">
-          <div className="flex items-start sm:items-center gap-4 sm:gap-6">
-            <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-[#143254] text-white flex items-center justify-center shrink-0 shadow-sm group-hover:scale-105 transition-transform">
-              <LayoutDashboard className="w-7 h-7 sm:w-8 sm:h-8 text-blue-200" />
-            </div>
-            <div>
-              <h4 className="text-lg sm:text-xl font-bold text-slate-900 group-hover:text-blue-700 transition-colors">
-                Dashboard Data Seragam
-              </h4>
-              <p className="text-sm text-slate-500 mt-1 max-w-xl">
-                Buka tabel data seragam, form input pengajuan baru, upload Excel, dan kelola konfirmasi penerimaan seragam karyawan.
-              </p>
-            </div>
-          </div>
-
-          <div className="shrink-0 flex items-center">
-            <div className="inline-flex items-center gap-2.5 px-6 py-3 rounded-xl font-bold text-sm bg-blue-700 text-white group-hover:bg-blue-800 shadow-sm group-hover:shadow transition-all">
-              <span>Buka Data Seragam</span>
-              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-            </div>
-          </div>
+      <section className="flex flex-col gap-4">
+        <div><p className="text-sm font-semibold text-accent-foreground">Panduan ukuran</p><h2 className="text-2xl font-bold tracking-tight text-foreground">Pilih ukuran dengan lebih yakin</h2><p className="mt-1 max-w-2xl text-sm leading-6 text-muted-foreground">Gunakan chart berikut sebagai referensi sebelum mengisi data ukuran baju dan celana.</p></div>
+        <div className="grid gap-5 lg:grid-cols-2">
+          <ChartCard title="Ukuran Kemeja Kerja" description="Ukuran baju dalam centimeter" src={SHIRT_CHART} />
+          <ChartCard title="Ukuran Celana Kerja" description="Ukuran celana dalam centimeter" src={TROUSER_CHART} />
         </div>
-      </div>
+      </section>
 
-      <div className="bg-slate-100/90 border border-slate-200 rounded-2xl p-5 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div>
-          <h5 className="text-sm font-bold text-slate-900">Download Format Template Excel</h5>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-2.5 w-full sm:w-auto">
-          <button onClick={() => downloadTemplate('pengajuan')} className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold bg-white text-slate-800 border border-slate-300 hover:bg-slate-50 hover:border-slate-400 transition-colors shadow-2xs cursor-pointer">
-            <FileDown className="w-4 h-4 text-blue-600" />
-            <span>Template Pengajuan (.xlsx)</span>
-          </button>
-          <button onClick={() => downloadTemplate('penerimaan')} className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold bg-white text-slate-800 border border-slate-300 hover:bg-slate-50 hover:border-slate-400 transition-colors shadow-2xs cursor-pointer">
-            <FileSpreadsheet className="w-4 h-4 text-emerald-600" />
-            <span>Template Penerimaan (.xlsx)</span>
-          </button>
-        </div>
-      </div>
+      <section className="flex flex-col gap-4 rounded-2xl border border-border bg-card p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
+        <div><h2 className="font-bold text-card-foreground">Template Excel</h2><p className="mt-1 text-sm text-muted-foreground">Gunakan format ini untuk input data secara massal.</p></div>
+        <div className="flex flex-wrap gap-2"><button onClick={() => downloadTemplate('pengajuan')} className="inline-flex items-center gap-2 rounded-xl border border-border bg-background px-4 py-2.5 text-xs font-semibold text-foreground hover:bg-muted"><FileDown data-icon="inline-start" /> Template Pengajuan</button><button onClick={() => downloadTemplate('penerimaan')} className="inline-flex items-center gap-2 rounded-xl border border-border bg-background px-4 py-2.5 text-xs font-semibold text-foreground hover:bg-muted"><FileSpreadsheet data-icon="inline-start" /> Template Penerimaan</button></div>
+      </section>
     </div>
   )
 }
 
-function KpiCard({ label, value, icon, colors, secondary, subtitle }: { label: string; value: number; icon: React.ReactNode; colors: string; secondary: string; subtitle: string }) {
-  return (
-    <div className="bg-white p-4 sm:p-5 rounded-xl border border-slate-200 shadow-2xs">
-      <div className="flex items-center justify-between mb-2">
-        <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">{label}</span>
-        <div className={`w-7 h-7 rounded-lg ${colors} flex items-center justify-center`}>{icon}</div>
-      </div>
-      <div className={`text-2xl sm:text-3xl font-extrabold ${secondary}`}>{value}</div>
-      <div className="text-[11px] text-slate-500 mt-0.5">{subtitle}</div>
-    </div>
-  )
+function Stat({ label, value, icon }: { label: string; value: number; icon: React.ReactNode }) {
+  return <div className="rounded-2xl border border-primary-foreground/10 bg-primary-foreground/10 p-4"><div className="mb-5 flex items-center justify-between text-primary-foreground/65"><span className="text-xs font-medium">{label}</span><span className="text-accent">{icon}</span></div><strong className="text-3xl">{value}</strong></div>
+}
+
+function ChartCard({ title, description, src }: { title: string; description: string; src: string }) {
+  return <article className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm"><div className="flex items-center gap-3 border-b border-border p-4"><div className="rounded-xl bg-muted p-2 text-accent-foreground"><Ruler /></div><div><h3 className="font-bold text-card-foreground">{title}</h3><p className="text-xs text-muted-foreground">{description}</p></div></div><div className="bg-muted/30 p-3"><img src={src} alt={`Panduan ${title}`} className="h-auto max-h-[34rem] w-full rounded-xl object-contain" /></div></article>
 }

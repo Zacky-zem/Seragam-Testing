@@ -16,21 +16,23 @@ model User {
 }
 
 model UniformRecord {
-  id              String   @id @default(cuid())
-  noPR            String   @unique
-  namaKaryawan    String
-  nip             String?
-  departemen      String
-  section         String?
-  ukuran          String
-  jenisSeragam    String
-  jumlah          Int      @default(1)
-  tanggalPengajuan DateTime?
+  id                String    @id @default(cuid())
+  noPR              String    @unique
+  namaKaryawan      String
+  nip               String?
+  departemen        String
+  ukuran            String
+  jenisSeragam      String
+  jumlah            Int       @default(1)
+  tanggalPengajuan  DateTime?
   tanggalPenerimaan DateTime?
-  status          String   @default("Diajukan")
-  keterangan      String?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  status            String    @default("Diajukan")
+  keterangan        String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  section           String?
+  ukuranCelana      String?
+
   @@index([namaKaryawan])
   @@index([departemen])
   @@index([status])
