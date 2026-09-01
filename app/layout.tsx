@@ -3,7 +3,7 @@ import type { Metadata, Viewport } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'JAI Uniform | Pengelolaan Seragam',
+  title: 'SERAGAM JAI | Pengelolaan Seragam',
   description: 'Dashboard pengajuan dan distribusi seragam PT JAI.',
   generator: 'Next.js',
   icons: {

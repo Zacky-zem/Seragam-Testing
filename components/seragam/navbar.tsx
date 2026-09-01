@@ -19,7 +19,7 @@ export function Navbar({ currentView, onNavigate, user, onLogout }: { currentVie
           </div>
           <div>
             <h1 className="text-base font-bold text-slate-900 leading-tight tracking-tight flex items-center gap-2">
-              Data Seragam
+              SERAGAM JAI
               <span className="text-[10px] font-semibold tracking-wider uppercase px-2 py-0.5 bg-blue-50 text-blue-700 rounded-full border border-blue-200">
                 PT JAI
               </span>
@@ -50,7 +50,7 @@ export function Navbar({ currentView, onNavigate, user, onLogout }: { currentVie
               className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-semibold text-white bg-[#143254] hover:bg-[#1d4470] transition-colors shadow-xs"
             >
               <Layers className="w-3.5 h-3.5" />
-              <span>Data Seragam</span>
+              <span>SERAGAM JAI</span>
             </button>
           )}
 

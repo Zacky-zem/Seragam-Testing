@@ -25,8 +25,8 @@ export function LoginPage({ onLogin }: { onLogin: (username: string, password: s
     <main className="login-shell min-h-screen w-full bg-background lg:grid lg:grid-cols-[minmax(0,0.92fr)_minmax(420px,1.08fr)]">
       <section className="flex min-h-screen flex-col px-6 py-8 sm:px-10 lg:px-16 xl:px-24">
         <header className="animate-rise flex items-center gap-4">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-lg shadow-primary/15"><span className="text-lg font-bold">DS</span></div>
-          <div><p className="text-lg font-bold tracking-tight text-foreground">Data Seragam</p><p className="text-xs font-medium text-muted-foreground">PT Jatim Autocomp Indonesia</p></div>
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-lg shadow-primary/15"><span className="text-[11px] font-black tracking-tight">JAI</span></div>
+          <div><p className="text-lg font-bold tracking-tight text-foreground">SERAGAM JAI</p><p className="text-xs font-medium text-muted-foreground">PT Jatim Autocomp Indonesia</p></div>
         </header>
 
         <div className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center py-12">
