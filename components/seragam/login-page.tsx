@@ -46,11 +46,8 @@ export function LoginPage({ onLogin }: { onLogin: (username: string, password: s
 
         <div className="my-auto max-w-md w-full mx-auto py-8">
           <div className="mb-8">
-            <span className="text-[11px] font-bold tracking-widest uppercase text-blue-700 bg-blue-50 px-2.5 py-1 rounded-md border border-blue-100">
-              INTERNAL APPLICATION
-            </span>
-            <h2 className="text-3xl font-extrabold text-slate-900 mt-3 tracking-tight">Selamat datang kembali</h2>
-            <p className="text-sm text-slate-500 mt-2">Masuk untuk mengelola dan memantau distribusi seragam kerja berbasis Nomor PR.</p>
+            <h2 className="text-3xl font-extrabold text-slate-900 mt-3 tracking-tight">Selamat datang</h2>
+            <p className="text-sm text-slate-500 mt-2">Masuk untuk mengelola dan memantau distribusi data seragam.</p>
           </div>
 
           {error && (
@@ -131,29 +128,19 @@ export function LoginPage({ onLogin }: { onLogin: (username: string, password: s
         <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#ffffff_1px,transparent_1px)] [background-size:20px_20px]" />
 
         <div className="relative z-10 max-w-md text-left">
-          <div className="w-14 h-14 rounded-2xl bg-white/10 border border-white/20 backdrop-blur-md flex items-center justify-center mb-8 shadow-inner">
-            <Shirt className="w-7 h-7 text-white" />
           </div>
 
           <h3 className="text-4xl font-extrabold tracking-tight text-white leading-tight mb-4">
             One source of truth for uniform tracking.
           </h3>
           <p className="text-base text-blue-100 font-normal leading-relaxed">
-            Kelola data pengajuan seragam dan catat update kedatangan seragam secara otomatis berbasis Nomor PR dengan cepat, akurat, dan terstruktur.
+            Kelola data pengajuan seragam dan catat update kedatangan seragam dengan cepat, akurat, dan terstruktur.
           </p>
 
           <div className="mt-10 grid grid-cols-2 gap-4">
-            <div className="p-4 rounded-xl bg-white/5 border border-white/10 backdrop-blur-xs">
-              <div className="text-2xl font-bold text-white mb-0.5">100%</div>
-              <div className="text-xs text-blue-200">Tracking Berbasis No. PR</div>
             </div>
-            <div className="p-4 rounded-xl bg-white/5 border border-white/10 backdrop-blur-xs">
-              <div className="text-2xl font-bold text-white mb-0.5">Bulk XLS</div>
-              <div className="text-xs text-blue-200">Upload & Update Cepat</div>
+
             </div>
           </div>
-        </div>
-      </div>
-    </div>
   )
 }

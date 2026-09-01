@@ -22,42 +22,32 @@ export function LandingPage({ records, onNavigateToTracking }: { records: Unifor
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-7">
       <div>
-        <div className="text-xs font-bold tracking-wider uppercase text-blue-700 mb-1">SISTEM INTERNAL PT JAI</div>
         <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">Menu Utama & Dashboard Seragam</h2>
-        <p className="text-sm text-slate-500 mt-1">Pantau pencatatan, pemesanan Nomor PR, dan distribusi seragam kerja secara terpusat.</p>
+        <p className="text-sm text-slate-500 mt-1"></p>
       </div>
 
       <div className="bg-[#143254] rounded-2xl text-white p-6 sm:p-8 shadow-sm relative overflow-hidden">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
           <div className="md:col-span-8 space-y-2.5">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-white/10 text-blue-100 text-xs font-semibold">
-              <Shirt className="w-4 h-4" />
               <span>PT JATIM AUTOCOMP INDONESIA</span>
             </div>
-            <h3 className="text-xl sm:text-2xl font-extrabold text-white">Sistem Pelacakan Seragam Kerja</h3>
+            <h3 className="text-xl sm:text-2xl font-extrabold text-white">Landing Page</h3>
             <p className="text-sm text-blue-100/90 leading-relaxed max-w-xl">
-              Alur pemantauan distribusi seragam karyawan berbasis Nomor PR yang akurat, cepat, dan mudah digunakan.
+              Alur pemantauan distribusi seragam karyawan akurat, cepat, dan mudah digunakan.
             </p>
           </div>
-
           <div className="md:col-span-4 md:border-l md:border-white/15 md:pl-6 flex flex-row md:flex-col justify-between items-center md:items-start gap-3">
             <div>
-              <div className="text-3xl sm:text-4xl font-black text-white">{totalRecords}</div>
-              <div className="text-xs text-blue-200 mt-0.5">Total Data Seragam Terdaftar</div>
-            </div>
-            <div className="text-xs text-emerald-300 font-semibold flex items-center gap-1.5 bg-emerald-950/40 px-2.5 py-1 rounded-md border border-emerald-500/30">
-              <CheckCircle2 className="w-3.5 h-3.5" />
-              <span>{receivedRecords.length} Selesai Diterima</span>
             </div>
           </div>
         </div>
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5 sm:gap-4">
-        <KpiCard label="Total PR" value={uniquePRs} icon={<Boxes className="w-4 h-4" />} colors="bg-blue-50 text-blue-700" secondary="text-slate-900" subtitle="Nomor PR Aktif" />
-        <KpiCard label="Dipesan" value={pendingRecords.length} icon={<Clock className="w-4 h-4" />} colors="bg-amber-50 text-amber-700" secondary="text-amber-600" subtitle="Menunggu Kedatangan" />
-        <KpiCard label="Diterima" value={receivedRecords.length} icon={<CheckCircle2 className="w-4 h-4" />} colors="bg-emerald-50 text-emerald-700" secondary="text-emerald-600" subtitle="Sudah Diserahkan" />
-        <KpiCard label="Total Stel" value={totalStel} icon={<PackageCheck className="w-4 h-4" />} colors="bg-indigo-50 text-indigo-700" secondary="text-slate-900" subtitle="Stel Seragam" />
+        <KpiCard label="Dipesan" value={pendingRecords.length} icon={<Clock className="w-4 h-4" />} colors="bg-amber-50 text-amber-700" secondary="text-amber-600" />
+        <KpiCard label="Diterima" value={receivedRecords.length} icon={<CheckCircle2 className="w-4 h-4" />} colors="bg-emerald-50 text-emerald-700" secondary="text-emerald-600" />
+        <KpiCard label="Total Stel" value={totalStel} icon={<PackageCheck className="w-4 h-4" />} colors="bg-indigo-50 text-indigo-700" secondary="text-slate-900" />
       </div>
 
       <div className="space-y-3">
@@ -69,7 +59,7 @@ export function LandingPage({ records, onNavigateToTracking }: { records: Unifor
             </div>
             <div>
               <h4 className="text-lg sm:text-xl font-bold text-slate-900 group-hover:text-blue-700 transition-colors">
-                Dashboard Tracking Data Seragam
+                Dashboard Data Seragam
               </h4>
               <p className="text-sm text-slate-500 mt-1 max-w-xl">
                 Buka tabel data seragam, form input pengajuan baru, upload Excel, dan kelola konfirmasi penerimaan seragam karyawan.
@@ -89,7 +79,6 @@ export function LandingPage({ records, onNavigateToTracking }: { records: Unifor
       <div className="bg-slate-100/90 border border-slate-200 rounded-2xl p-5 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <h5 className="text-sm font-bold text-slate-900">Download Format Template Excel</h5>
-          <p className="text-xs text-slate-500 mt-0.5">Gunakan template resmi untuk input pengajuan baru atau update kedatangan seragam.</p>
         </div>
 
         <div className="flex flex-wrap items-center gap-2.5 w-full sm:w-auto">

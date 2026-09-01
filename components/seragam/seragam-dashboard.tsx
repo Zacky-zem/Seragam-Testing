@@ -13,7 +13,7 @@ const normalizeRecord = (record: any): UniformRecord => ({
   namaKaryawan: record.namaKaryawan ?? 'Unknown',
   nik: record.nip ?? '',
   departemen: record.departemen ?? 'Unknown',
-  section: record.section || (record.departemen && record.departemen !== 'Unknown' ? 'Belum diisi' : 'N/A'),
+  section: typeof record.section === 'string' ? record.section : '',
   jenisBaju: record.jenisSeragam ?? 'Tidak ada data',
   ukuran: record.ukuran ?? 'M',
   jumlahStel: Number(record.jumlah ?? 1),
@@ -198,9 +198,9 @@ export default function SeragamDashboard() {
       <footer className="bg-white border-t border-slate-200 py-6 text-center text-xs text-slate-400 no-print">
         <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
           <div>
-            © {new Date().getFullYear()} <strong>PT Jatim Autocomp Indonesia (PT JAI)</strong> — Internal Uniform Tracking System
+            © {new Date().getFullYear()} <strong>PT Jatim Autocomp Indonesia </strong>
           </div>
-          <div className="text-[11px] text-slate-400">Sistem Distribusi Seragam Berbasis Nomor PR</div>
+          <div className="text-[11px] text-slate-400">Sistem Distribusi Seragam</div>
         </div>
       </footer>
 

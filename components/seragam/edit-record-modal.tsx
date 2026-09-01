@@ -66,10 +66,11 @@ export function EditRecordModal({
 
           <div>
             <label className="mb-1.5 block text-[11px] font-semibold text-slate-700">Section</label>
-            <select value={form.section} onChange={(e) => updateField('section', e.target.value)} className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm">
-              {(sectionsMap[form.departemen] || [form.section]).map((section) => (
+            <select value={form.section || ''} onChange={(e) => updateField('section', e.target.value)} className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm">
+              {Array.from(new Set([...(sectionsMap[form.departemen] || []), form.section].filter(Boolean))).map((section) => (
                 <option key={section} value={section}>{section}</option>
               ))}
+              <option value="">Belum diisi</option>
             </select>
           </div>
 
