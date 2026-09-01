@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react'
 import { X } from 'lucide-react'
-import { departments, sectionsMap, uniformSizes, uniformTypes } from './data'
+import { departments, sectionsMap, trouserSizes, uniformSizes, uniformTypes } from './data'
 import type { UniformRecord } from './types'
 
 export function EditRecordModal({
@@ -89,6 +89,14 @@ export function EditRecordModal({
               {uniformSizes.map((size) => (
                 <option key={size} value={size}>{size}</option>
               ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="mb-1.5 block text-[11px] font-semibold text-slate-700">Uk. Celana</label>
+            <select value={form.ukuranCelana || ''} onChange={(e) => updateField('ukuranCelana', e.target.value)} className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm">
+              <option value="">Belum diisi</option>
+              {trouserSizes.map((size) => <option key={size} value={size}>{size}</option>)}
             </select>
           </div>
 

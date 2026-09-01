@@ -23,6 +23,7 @@ model UniformRecord {
   departemen      String
   section         String?
   ukuran          String
+  ukuranCelana    String?
   jenisSeragam    String
   jumlah          Int      @default(1)
   tanggalPengajuan DateTime?

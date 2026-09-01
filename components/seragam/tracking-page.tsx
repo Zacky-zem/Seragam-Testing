@@ -18,7 +18,7 @@ import {
   ChevronDown,
 } from 'lucide-react'
 import * as XLSX from 'xlsx'
-import { departments, sectionsMap, uniformSizes, uniformTypes } from './data'
+import { departments, sectionsMap, trouserSizes, uniformSizes, uniformTypes } from './data'
 import type { UniformRecord } from './types'
 import { EditRecordModal } from './edit-record-modal'
 
@@ -49,6 +49,7 @@ export function TrackingPage({
   const [customSection, setCustomSection] = useState('')
   const [jenisBaju, setJenisBaju] = useState(uniformTypes[0])
   const [ukuran, setUkuran] = useState(uniformSizes[4])
+  const [ukuranCelana, setUkuranCelana] = useState(trouserSizes[3])
   const [jumlahStel, setJumlahStel] = useState(1)
   const [noPR, setNoPR] = useState(generateNoPR())
   const [tglInput, setTglInput] = useState(new Date().toISOString().split('T')[0])
@@ -127,6 +128,7 @@ export function TrackingPage({
     setCustomSection('')
     setJenisBaju(uniformTypes[0])
     setUkuran(uniformSizes[4])
+    setUkuranCelana(trouserSizes[3])
     setJumlahStel(1)
     setNoPR(generateNoPR())
     setTglInput(new Date().toISOString().split('T')[0])
@@ -157,6 +159,7 @@ export function TrackingPage({
       section: resolvedSection,
       jenisBaju,
       ukuran,
+      ukuranCelana,
       jumlahStel: Number(jumlahStel) || 1,
       noPR: noPR.trim().toUpperCase(),
       tglInput: tglInput || new Date().toISOString().split('T')[0],
@@ -230,7 +233,7 @@ export function TrackingPage({
 
   const downloadTemplate = (kind: 'pengajuan' | 'penerimaan') => {
     const rows = kind === 'pengajuan'
-      ? [{ noPR: '', namaKaryawan: '', NIK: '', departemen: '', section: '', jenisBaju: '', ukuran: '', jumlahStel: 1, tglInput: '', keterangan: '' }]
+      ? [{ noPR: '', namaKaryawan: '', NIK: '', departemen: '', section: '', jenisBaju: '', ukuran: '', ukuranCelana: '', jumlahStel: 1, tglInput: '', keterangan: '' }]
       : [{ noPR: '', tglTerima: '', keterangan: '' }]
     const sheet = XLSX.utils.json_to_sheet(rows)
     const book = XLSX.utils.book_new()
@@ -243,7 +246,7 @@ export function TrackingPage({
     const rows = sourceRecords.map((record) => ({
       'No. PR': record.noPR, NIK: record.nik, 'Nama Karyawan': record.namaKaryawan,
       Departemen: record.departemen, Section: record.section, 'Jenis Baju': record.jenisBaju,
-      Ukuran: record.ukuran, Jumlah: record.jumlahStel, 'Tgl Input': record.tglInput,
+      'Ukuran Baju': record.ukuran, 'Uk. Celana': record.ukuranCelana, Jumlah: record.jumlahStel, 'Tgl Input': record.tglInput,
       'Tgl Terima': record.tglTerima || '', Status: record.tglTerima ? 'Diterima' : 'Dipesan', Keterangan: record.keterangan || '',
     }))
     const sheet = XLSX.utils.json_to_sheet(rows)
@@ -259,7 +262,7 @@ export function TrackingPage({
     const workbook = XLSX.read(data)
     const rows = XLSX.utils.sheet_to_json<Record<string, unknown>>(workbook.Sheets[workbook.SheetNames[0]])
     rows.forEach((row) => {
-      if (row.noPR && row.namaKaryawan) onAddRecord({ id: `import-${Date.now()}-${Math.random()}`, namaKaryawan: String(row.namaKaryawan), nik: String(row.NIK ?? row.nik ?? ''), departemen: String(row.departemen ?? ''), section: String(row.section ?? ''), jenisBaju: String(row.jenisBaju ?? row.jenisSeragam ?? uniformTypes[0]), ukuran: String(row.ukuran ?? uniformSizes[4]), jumlahStel: Number(row.jumlahStel ?? row.jumlah ?? 1), noPR: String(row.noPR), tglInput: String(row.tglInput ?? ''), tglTerima: null, keterangan: String(row.keterangan ?? '') })
+      if (row.noPR && row.namaKaryawan) onAddRecord({ id: `import-${Date.now()}-${Math.random()}`, namaKaryawan: String(row.namaKaryawan), nik: String(row.NIK ?? row.nik ?? ''), departemen: String(row.departemen ?? ''), section: String(row.section ?? ''), jenisBaju: String(row.jenisBaju ?? row.jenisSeragam ?? uniformTypes[0]), ukuran: String(row.ukuran ?? uniformSizes[4]), ukuranCelana: String(row.ukuranCelana ?? row['Uk. Celana'] ?? trouserSizes[3]), jumlahStel: Number(row.jumlahStel ?? row.jumlah ?? 1), noPR: String(row.noPR), tglInput: String(row.tglInput ?? ''), tglTerima: null, keterangan: String(row.keterangan ?? '') })
     })
     event.target.value = ''
   }
@@ -376,6 +379,12 @@ export function TrackingPage({
               </select>
             </div>
             <div>
+              <label className="mb-1.5 block text-[11px] font-semibold text-slate-700">Uk. Celana</label>
+              <select value={ukuranCelana} onChange={(e) => setUkuranCelana(e.target.value)} className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm">
+                {trouserSizes.map((size) => <option key={size} value={size}>{size}</option>)}
+              </select>
+            </div>
+            <div>
               <label className="mb-1.5 block text-[11px] font-semibold text-slate-700">Jumlah Stel</label>
               <input type="number" min={1} value={jumlahStel} onChange={(e) => setJumlahStel(Number(e.target.value || 1))} className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm" />
             </div>
@@ -431,7 +440,8 @@ export function TrackingPage({
                 <th className="px-4 py-3 font-semibold">Nama Karyawan</th>
                 <th className="px-4 py-3 font-semibold">Departemen &amp; Section</th>
                 <th className="px-4 py-3 font-semibold">Jenis Baju</th>
-                <th className="px-4 py-3 font-semibold">Ukuran</th>
+                <th className="px-4 py-3 font-semibold">Uk. Baju</th>
+                <th className="px-4 py-3 font-semibold">Uk. Celana</th>
                 <th className="px-4 py-3 font-semibold">Jumlah</th>
                 <th className="px-4 py-3 font-semibold">Tgl Input</th>
                 <th className="px-4 py-3 font-semibold">Tgl Terima</th>
@@ -454,9 +464,8 @@ export function TrackingPage({
                     <div className="mt-0.5 text-xs text-slate-500">{record.section || 'Belum diisi'}</div>
                   </td>
                   <td className="px-4 py-3 text-slate-700">{record.jenisBaju}</td>
-                  <td className="px-4 py-3">
-                    <span className="inline-flex rounded-lg border border-blue-200 bg-blue-50 px-2 py-1 text-xs font-semibold text-blue-700">{record.ukuran}</span>
-                  </td>
+                  <td className="px-4 py-3"><span className="inline-flex rounded-lg border border-blue-200 bg-blue-50 px-2 py-1 text-xs font-semibold text-blue-700">{record.ukuran}</span></td>
+                  <td className="px-4 py-3"><span className="inline-flex rounded-lg border border-amber-200 bg-amber-50 px-2 py-1 text-xs font-semibold text-amber-700">{record.ukuranCelana || '-'}</span></td>
                   <td className="px-4 py-3 text-slate-700">{record.jumlahStel} stel</td>
                   <td className="px-4 py-3 text-slate-700">{formatDate(record.tglInput)}</td>
                   <td className="px-4 py-3 text-slate-700">{formatDate(record.tglTerima)}</td>

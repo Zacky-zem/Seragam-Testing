@@ -13,6 +13,7 @@ export type UniformRecord = {
   section: string
   jenisBaju: string
   ukuran: string
+  ukuranCelana: string
   jumlahStel: number
   noPR: string
   tglInput: string
