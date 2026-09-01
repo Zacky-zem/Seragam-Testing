@@ -25,15 +25,15 @@ export function LandingPage({ records, onNavigateToTracking }: { records: Unifor
 
   return (
     <div className="mx-auto flex max-w-7xl flex-col gap-8 px-4 py-8 sm:px-6 lg:px-8">
-      <section className="overflow-hidden rounded-[2rem] bg-foreground text-background shadow-xl">
+      <section className="landing-hero overflow-hidden rounded-[2rem] border border-border bg-card text-card-foreground shadow-xl">
         <div className="grid gap-8 p-6 sm:p-10 lg:grid-cols-[1.1fr_.9fr] lg:items-center">
           <div className="flex flex-col gap-5">
             <div className="flex items-center gap-2 text-sm font-semibold text-accent"><Sparkles data-icon="inline-start" /> PT. Jatim Autocomp Indonesia</div>
             <div className="flex flex-col gap-3">
               <h1 className="max-w-2xl text-balance text-3xl font-bold tracking-tight sm:text-5xl">Data seragam lebih rapi, distribusi lebih terkendali.</h1>
-              <p className="max-w-xl text-pretty leading-7 text-primary-foreground/75">Kelola pengajuan, ukuran baju dan celana, hingga penerimaan seragam karyawan PT Jatim Autocomp Indonesia dalam satu dashboard.</p>
+              <p className="max-w-xl text-pretty leading-7 text-muted-foreground">Kelola pengajuan, ukuran baju dan celana, hingga penerimaan seragam karyawan PT Jatim Autocomp Indonesia dalam satu dashboard.</p>
             </div>
-            <button onClick={onNavigateToTracking} className="inline-flex w-fit items-center gap-2 rounded-xl border-2 border-foreground bg-foreground px-5 py-3 text-sm font-bold text-background shadow-[0_3px_0_var(--muted-foreground)] transition-colors hover:bg-background hover:text-foreground active:translate-y-px active:shadow-none"><span>Kelola Data Seragam</span><ArrowRight data-icon="inline-end" /></button>
+            <button onClick={onNavigateToTracking} className="inline-flex w-fit items-center gap-2 rounded-xl border-2 border-foreground bg-foreground px-5 py-3 text-sm font-bold text-background shadow-[0_3px_0_var(--muted-foreground)] transition-colors hover:bg-foreground/85 active:translate-y-px active:shadow-none"><span>Kelola Data Seragam</span><ArrowRight data-icon="inline-end" /></button>
           </div>
           <div className="grid grid-cols-2 gap-3 sm:gap-4">
             <Stat label="Total pengajuan" value={records.length} icon={<Shirt />} />

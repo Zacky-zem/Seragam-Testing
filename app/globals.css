@@ -182,11 +182,22 @@
 .login-shell #btn-submit-login { background: #111111; color: #ffffff; }
 .login-shell .mt-5 { background: #e5e5e5; color: #4a4a4a; }
 
+.landing-hero {
+  background: linear-gradient(115deg, #f8f8f7 0%, #ffffff 46%, #eeeeec 100%);
+  background-size: 180% 180%;
+  animation: hero-sheen 14s ease-in-out infinite;
+}
+
 .landing-stat-card {
   color: #ffffff;
   background: linear-gradient(135deg, #111111 0%, #2a2a2a 48%, #111111 100%);
   background-size: 220% 220%;
   animation: monochrome-drift 9s ease-in-out infinite;
+}
+
+@keyframes hero-sheen {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
 }
 
 @keyframes monochrome-drift {
@@ -221,5 +232,5 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .animate-rise, .landing-stat-card { animation: none; }
+  .animate-rise, .landing-stat-card, .landing-hero { animation: none; }
 }
