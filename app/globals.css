@@ -161,3 +161,54 @@
     @apply bg-background text-foreground;
   }
 }
+
+:root {
+  --primary: oklch(0.28 0.08 250);
+  --primary-foreground: oklch(0.99 0 0);
+  --accent: oklch(0.62 0.22 28);
+  --accent-foreground: oklch(0.48 0.16 28);
+  --login-navy: #102f52;
+  --login-ink: #142235;
+  --login-surface: #f8fafc;
+}
+
+.login-shell { background: var(--login-surface); color: var(--login-ink); }
+.login-shell > section:first-child { background: var(--login-surface); }
+.login-shell h1, .login-shell label, .login-shell header p:first-child { color: var(--login-ink); }
+.login-shell input { background: #ffffff; color: var(--login-ink); }
+.login-shell input::placeholder { color: #64748b; }
+.login-shell .text-muted-foreground { color: #64748b; }
+.login-visual { background: var(--login-navy); color: #ffffff; }
+.login-visual h2, .login-visual p, .login-visual span { color: inherit; }
+.login-shell #btn-submit-login { background: var(--login-navy); color: #ffffff; }
+.login-shell .mt-5 { background: #eef2f7; color: #475569; }
+
+.login-grid {
+  background-image: radial-gradient(circle, color-mix(in oklch, var(--primary-foreground) 32%, transparent) 1px, transparent 1px);
+  background-size: 24px 24px;
+  mask-image: linear-gradient(to bottom, black, transparent 88%);
+}
+
+.login-visual::after {
+  content: '';
+  position: absolute;
+  inset: 20% -15% auto auto;
+  width: 24rem;
+  height: 24rem;
+  border: 1px solid color-mix(in oklch, var(--primary-foreground) 14%, transparent);
+  border-radius: 999px;
+  transform: rotate(18deg);
+}
+
+.animate-rise {
+  animation: rise-in 650ms cubic-bezier(.2,.8,.2,1) both;
+}
+
+@keyframes rise-in {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-rise { animation: none; }
+}
