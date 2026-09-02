@@ -35,12 +35,7 @@ export function LoginPage({ onLogin }: { onLogin: (username: string, password: s
     <div className="min-h-screen w-full flex flex-col lg:flex-row bg-slate-50">
       <div className="w-full lg:w-1/2 flex flex-col justify-between p-6 sm:p-12 lg:p-16 xl:p-24 bg-white">
         <div className="flex items-center gap-3">
-          <div className="w-11 h-11 rounded-xl bg-[#143254] flex items-center justify-center text-white shadow-xs">
-            <Shirt className="w-5 h-5 stroke-[2.2]" />
-          </div>
-          <div>
-            <h1 className="text-base font-bold text-slate-900 tracking-tight">Data Seragam</h1>
-            <p className="text-xs font-medium text-slate-500">PT Jatim Autocomp Indonesia</p>
+          <div >
           </div>
         </div>
 
@@ -128,9 +123,11 @@ export function LoginPage({ onLogin }: { onLogin: (username: string, password: s
         <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#ffffff_1px,transparent_1px)] [background-size:20px_20px]" />
 
         <div className="relative z-10 max-w-md text-left">
-          </div>
+          <span className="inline-flex items-center rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs font-medium tracking-[0.2em] text-blue-100 uppercase">
+            Uniform System
+          </span>
 
-          <h3 className="text-4xl font-extrabold tracking-tight text-white leading-tight mb-4">
+          <h3 className="mt-6 text-4xl font-extrabold tracking-tight text-white leading-tight mb-4">
             One source of truth for uniform tracking.
           </h3>
           <p className="text-base text-blue-100 font-normal leading-relaxed">
@@ -138,9 +135,17 @@ export function LoginPage({ onLogin }: { onLogin: (username: string, password: s
           </p>
 
           <div className="mt-10 grid grid-cols-2 gap-4">
+            <div className="rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur-sm">
+              <p className="text-2xl font-bold text-white">24/7</p>
+              <p className="mt-1 text-xs text-blue-100">Monitoring data</p>
             </div>
-
+            <div className="rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur-sm">
+              <p className="text-2xl font-bold text-white">100%</p>
+              <p className="mt-1 text-xs text-blue-100">Terkonsolidasi</p>
             </div>
           </div>
+        </div>
+      </div>
+    </div>
   )
 }

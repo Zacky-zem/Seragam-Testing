@@ -42,6 +42,7 @@ export async function POST(request: Request) {
 
   const tanggalPengajuan = toDate(body.tanggalPengajuan) ?? new Date()
   const tanggalPenerimaan = body.tanggalPenerimaan ? toDate(body.tanggalPenerimaan) : null
+  const keterangan = typeof body.keterangan === 'string' ? body.keterangan.trim() || null : null
 
   try {
     const record = await prisma.uniformRecord.create({
@@ -58,7 +59,7 @@ export async function POST(request: Request) {
         status: body.status ? String(body.status) : 'Diajukan',
         tanggalPengajuan,
         tanggalPenerimaan,
-        keterangan: body.keterangan || null,
+        keterangan,
       },
     })
 
