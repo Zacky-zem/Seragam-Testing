@@ -24,7 +24,7 @@ export function LandingPage({ records, onNavigateToTracking }: { records: Unifor
   }
 
   return (
-    <div className="mx-auto flex max-w-7xl flex-col gap-8 px-4 py-8 sm:px-6 lg:px-8">
+    <div className="mx-auto flex max-w-7xl flex-col gap-10 px-4 py-8 sm:px-6 lg:px-8">
       <section className="overflow-hidden rounded-[2rem] bg-primary text-primary-foreground shadow-xl">
         <div className="grid gap-8 p-6 sm:p-10 lg:grid-cols-[1.1fr_.9fr] lg:items-center">
           <div className="flex flex-col gap-5">
