@@ -178,7 +178,7 @@ export default function SeragamDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col selection:bg-blue-600 selection:text-white">
+    <div className="min-h-screen bg-background text-foreground flex flex-col selection:bg-primary selection:text-primary-foreground">
       <Navbar currentView={currentView} onNavigate={setCurrentView} user={user} onLogout={handleLogout} />
 
       <main className="flex-1 pb-16">
@@ -195,7 +195,7 @@ export default function SeragamDashboard() {
         )}
       </main>
 
-      <footer className="bg-white border-t border-slate-200 py-6 text-center text-xs text-slate-400 no-print">
+      <footer className="border-t border-border bg-card py-6 text-center text-xs text-muted-foreground no-print">
         <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
           <div>
             © {new Date().getFullYear()} <strong>PT Jatim Autocomp Indonesia </strong>

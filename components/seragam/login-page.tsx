@@ -1,7 +1,8 @@
 'use client'
 
+import Image from 'next/image'
 import React, { useState } from 'react'
-import { AlertCircle, ArrowRight, Lock, ShieldCheck, Shirt, User } from 'lucide-react'
+import { AlertCircle, ArrowRight, Lock, ShieldCheck, User } from 'lucide-react'
 
 export function LoginPage({ onLogin }: { onLogin: (username: string, password: string) => Promise<void> | void }) {
   const [username, setUsername] = useState('admin')
@@ -35,7 +36,12 @@ export function LoginPage({ onLogin }: { onLogin: (username: string, password: s
     <div className="min-h-screen w-full flex flex-col lg:flex-row bg-background">
       <div className="w-full lg:w-1/2 flex flex-col justify-between p-6 sm:p-12 lg:p-16 xl:p-24 bg-card">
         <div className="flex items-center gap-3">
-          <div >
+          <div className="flex h-10 w-24 items-center justify-center overflow-hidden rounded-lg bg-white p-1 shadow-sm ring-1 ring-border">
+            <Image src="/yazaki-logo.jpeg" alt="Logo Yazaki" width={144} height={58} className="h-full w-full object-contain" priority />
+          </div>
+          <div>
+            <p className="text-xs font-bold text-foreground">Seragam JAI</p>
+            <p className="text-[11px] text-muted-foreground">PT Jatim Autocomp Indonesia</p>
           </div>
         </div>
 
