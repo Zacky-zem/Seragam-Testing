@@ -29,20 +29,18 @@ export function LandingPage({ records, onNavigateToTracking }: { records: Unifor
       <section className="animate-fade-up overflow-hidden rounded-[2rem] bg-primary text-primary-foreground shadow-xl">
         <div className="grid gap-8 p-6 sm:p-10 lg:grid-cols-[1.1fr_.9fr] lg:items-center">
           <div className="animate-fade-up flex flex-col gap-5">
-            <div className="flex flex-wrap items-center gap-3 text-sm font-semibold text-accent"><span className="flex h-9 w-24 items-center justify-center overflow-hidden rounded-lg bg-white p-1 shadow-sm"><Image src="/yazaki-logo.jpeg" alt="Logo Yazaki" width={144} height={58} className="h-full w-full object-contain" /></span><span className="flex items-center gap-2"><Sparkles data-icon="inline-start" /> PT. Jatim Autocomp Indonesia</span></div>
+            <div className="flex flex-wrap items-center gap-2 text-sm font-semibold text-accent"><span className="flex items-center gap-2"><Sparkles data-icon="inline-start" /> PT. Jatim Autocomp Indonesia</span></div>
             <div className="flex flex-col gap-3">
               <h1 className="max-w-2xl text-balance text-3xl font-bold tracking-tight sm:text-5xl">Data seragam lebih rapi, distribusi lebih terkendali.</h1>
               <p className="max-w-xl text-pretty leading-7 text-primary-foreground/75">Kelola pengajuan, ukuran baju dan celana, hingga penerimaan seragam karyawan PT Jatim Autocomp Indonesia dalam satu dashboard.</p>
             </div>
             <button onClick={onNavigateToTracking} className="inline-flex w-fit items-center gap-2 rounded-xl bg-white px-5 py-3 text-sm font-bold text-primary transition-all shadow-sm hover:-translate-y-0.5 hover:bg-accent"><span>Kelola Data Seragam</span><ArrowRight data-icon="inline-end" /></button>
           </div>
-          <div className="animate-fade-up animate-delay-2 relative flex min-h-72 items-center justify-center overflow-hidden rounded-[1.75rem] border border-white/15 bg-gradient-to-br from-white/15 via-primary-foreground/5 to-slate-950/40 p-8 shadow-inner">
-            <div className="absolute -left-16 -top-16 h-48 w-48 rounded-full bg-cyan-300/20 blur-3xl" aria-hidden="true" />
-            <div className="absolute -bottom-20 -right-12 h-56 w-56 rounded-full bg-blue-950/70 blur-3xl" aria-hidden="true" />
-            <div className="relative flex flex-col items-center gap-5 text-center">
-              <div className="rounded-2xl bg-white p-3 shadow-2xl ring-1 ring-white/40 transition-transform duration-500 hover:scale-105">
-                <Image src="/yazaki-logo.jpeg" alt="Logo Yazaki" width={260} height={104} className="h-auto w-52 object-contain sm:w-60" />
-              </div>
+          <div className="animate-fade-up animate-delay-2 relative flex min-h-72 items-center justify-center overflow-hidden p-2 sm:min-h-80 lg:min-h-[22rem]">
+            <div className="pointer-events-none absolute inset-y-0 right-[-12%] w-[112%] bg-gradient-to-l from-transparent via-primary/20 to-primary/95" aria-hidden="true" />
+            <div className="pointer-events-none absolute -right-16 top-1/2 h-72 w-72 -translate-y-1/2 rounded-full bg-cyan-300/15 blur-3xl" aria-hidden="true" />
+            <div className="relative flex flex-col items-center gap-5 text-center transition-transform duration-700 hover:scale-105">
+              <Image src="/yazaki-logo.jpeg" alt="Logo Yazaki" width={520} height={208} className="h-auto w-[min(92%,30rem)] object-contain mix-blend-screen opacity-95 drop-shadow-[0_18px_24px_rgba(0,0,0,0.3)]" />
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.28em] text-primary-foreground/60">Uniform management system</p>
                 <p className="mt-2 text-sm font-medium text-primary-foreground/85">PT Jatim Autocomp Indonesia</p>
