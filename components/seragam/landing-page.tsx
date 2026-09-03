@@ -28,13 +28,15 @@ export function LandingPage({ records, onNavigateToTracking }: { records: Unifor
     <div className="mx-auto flex max-w-7xl flex-col gap-8 px-4 py-8 sm:px-6 lg:px-8">
       <section className="animate-fade-up overflow-hidden rounded-[2rem] bg-primary text-primary-foreground shadow-xl">
         <div className="grid gap-8 p-6 sm:p-10 lg:grid-cols-[1.1fr_.9fr] lg:items-center">
-          <div className="animate-fade-up flex flex-col gap-6 py-5 sm:gap-7 sm:py-8 lg:py-10">
-            <div className="flex flex-wrap items-center gap-2 text-sm font-semibold uppercase tracking-[0.12em] text-primary-foreground/90"><Sparkles aria-hidden="true" /> <span>PT. JATIM AUTOCOMP INDONESIA</span></div>
-            <div className="flex flex-col gap-4">
-              <h1 className="max-w-2xl text-balance text-3xl font-bold leading-[1.08] tracking-tight text-white sm:text-5xl">Data seragam lebih rapi, distribusi lebih terkendali.</h1>
-              <p className="max-w-xl text-pretty text-base font-normal leading-7 text-slate-200 sm:text-lg">Kelola seluruh proses pengajuan seragam karyawan, dari ukuran hingga penerimaan, secara efisien dalam satu dasbor terpadu.</p>
+          <div className="flex flex-col gap-6 py-5 sm:gap-7 sm:py-8 lg:py-10">
+            <div className="relative -top-4 flex flex-wrap items-center gap-2 text-sm font-semibold uppercase tracking-[0.12em] text-primary-foreground/90 sm:-top-6 lg:-top-8"><Sparkles aria-hidden="true" /> <span>PT. JATIM AUTOCOMP INDONESIA</span></div>
+            <div className="animate-fade-up flex flex-col gap-6 sm:gap-7">
+              <div className="flex flex-col gap-4">
+                <h1 className="max-w-2xl text-balance text-3xl font-bold leading-[1.08] tracking-tight text-white sm:text-5xl">Data seragam lebih rapi, distribusi lebih terkendali.</h1>
+                <p className="max-w-xl text-pretty text-base font-normal leading-7 text-slate-200 sm:text-lg">Kelola seluruh proses pengajuan seragam karyawan, dari ukuran hingga penerimaan, secara efisien dalam satu dasbor terpadu.</p>
+              </div>
+              <button onClick={onNavigateToTracking} className="inline-flex w-fit items-center gap-2 rounded-full bg-white px-6 py-3.5 text-sm font-bold text-primary shadow-lg shadow-slate-950/15 transition-all hover:-translate-y-1 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-primary"><span>Kelola Data Seragam</span><ArrowRight aria-hidden="true" /></button>
             </div>
-            <button onClick={onNavigateToTracking} className="inline-flex w-fit items-center gap-2 rounded-full bg-white px-6 py-3.5 text-sm font-bold text-primary shadow-lg shadow-slate-950/15 transition-all hover:-translate-y-1 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-primary"><span>Kelola Data Seragam</span><ArrowRight aria-hidden="true" /></button>
           </div>
           <div className="animate-fade-up animate-delay-2 relative flex min-h-72 items-center justify-center overflow-hidden p-2 sm:min-h-80 lg:min-h-[22rem]">
             <div className="pointer-events-none absolute inset-0 opacity-25" aria-hidden="true">
