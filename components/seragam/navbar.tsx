@@ -19,10 +19,7 @@ export function Navbar({ currentView, onNavigate, user, onLogout }: { currentVie
           </div>
           <div>
             <h1 className="text-base font-bold text-slate-900 leading-tight tracking-tight flex items-center gap-2">
-              Data Seragam
-              <span className="text-[10px] font-semibold tracking-wider uppercase px-2 py-0.5 bg-blue-50 text-blue-700 rounded-full border border-blue-200">
-                PT JAI
-              </span>
+              Seragam JAI
             </h1>
             <p className="text-xs font-medium text-slate-500">PT Jatim Autocomp Indonesia</p>
           </div>

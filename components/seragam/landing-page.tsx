@@ -15,7 +15,7 @@ export function LandingPage({ records, onNavigateToTracking }: { records: Unifor
 
   const downloadTemplate = (kind: 'pengajuan' | 'penerimaan') => {
     const rows = kind === 'pengajuan'
-      ? [{ noPR: '', namaKaryawan: '', NIK: '', departemen: '', section: '', jenisBaju: '', ukuran: '', ukuranCelana: '', jumlahStel: 1, tglInput: '', keterangan: '' }]
+      ? [{ noPR: '', namaKaryawan: '', NIK: '', departemen: '', section: '', ukuranBaju: '', ukuranCelana: '', jumlahStel: 1, tglInput: '', keterangan: '' }]
       : [{ noPR: '', tglTerima: '', keterangan: '' }]
     const sheet = XLSX.utils.json_to_sheet(rows)
     const book = XLSX.utils.book_new()
@@ -36,10 +36,10 @@ export function LandingPage({ records, onNavigateToTracking }: { records: Unifor
             <button onClick={onNavigateToTracking} className="inline-flex w-fit items-center gap-2 rounded-xl bg-accent px-5 py-3 text-sm font-bold text-accent-foreground transition-transform hover:-translate-y-0.5"><span>Kelola Data Seragam</span><ArrowRight data-icon="inline-end" /></button>
           </div>
           <div className="grid grid-cols-2 gap-3 sm:gap-4">
-            <Stat label="Total pengajuan" value={records.length} icon={<Shirt />} />
-            <Stat label="Menunggu" value={pending} icon={<Truck />} />
-            <Stat label="Sudah diterima" value={received} icon={<CheckCircle2 />} />
-            <Stat label="Total stel" value={totalStel} icon={<Ruler />} />
+            <Stat label="Total pengajuan" value={records.length}  />
+            <Stat label="Menunggu" value={pending} />
+            <Stat label="Sudah diterima" value={received}  />
+            <Stat label="Total stel" value={totalStel}  />
           </div>
         </div>
       </section>

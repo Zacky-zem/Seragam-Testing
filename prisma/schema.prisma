@@ -21,8 +21,9 @@ model UniformRecord {
   namaKaryawan      String
   nip               String?
   departemen        String
-  ukuran            String
-  jenisSeragam      String
+  section           String?
+  ukuranBaju        String
+  ukuranCelana      String?
   jumlah            Int       @default(1)
   tanggalPengajuan  DateTime?
   tanggalPenerimaan DateTime?
@@ -30,8 +31,6 @@ model UniformRecord {
   keterangan        String?
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
-  section           String?
-  ukuranCelana      String?
 
   @@index([namaKaryawan])
   @@index([departemen])

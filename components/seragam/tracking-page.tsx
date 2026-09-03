@@ -18,7 +18,7 @@ import {
   ChevronDown,
 } from 'lucide-react'
 import * as XLSX from 'xlsx'
-import { departments, sectionsMap, trouserSizes, uniformSizes, uniformTypes } from './data'
+import { departments, sectionsMap, trouserSizes, uniformSizes } from './data'
 import type { UniformRecord } from './types'
 import { EditRecordModal } from './edit-record-modal'
 
@@ -43,16 +43,15 @@ export function TrackingPage({
 }) {
   const [namaKaryawan, setNamaKaryawan] = useState('')
   const [nik, setNik] = useState('')
-  const [deptOption, setDeptOption] = useState<string>(departments[0])
+  const [deptOption, setDeptOption] = useState<string>('')
   const [customDept, setCustomDept] = useState('')
-  const [sectionOption, setSectionOption] = useState<string>(sectionsMap[departments[0]][0])
+  const [sectionOption, setSectionOption] = useState<string>('')
   const [customSection, setCustomSection] = useState('')
-  const [jenisBaju, setJenisBaju] = useState(uniformTypes[0])
-  const [ukuran, setUkuran] = useState(uniformSizes[4])
-  const [ukuranCelana, setUkuranCelana] = useState(trouserSizes[3])
-  const [jumlahStel, setJumlahStel] = useState(1)
-  const [noPR, setNoPR] = useState(generateNoPR())
-  const [tglInput, setTglInput] = useState(new Date().toISOString().split('T')[0])
+  const [ukuranBaju, setUkuranBaju] = useState('')
+  const [ukuranCelana, setUkuranCelana] = useState('')
+  const [jumlahStel, setJumlahStel] = useState<number | ''>('')
+  const [noPR, setNoPR] = useState('')
+  const [tglInput, setTglInput] = useState('')
   const [tglTerima, setTglTerima] = useState('')
   const [keterangan, setKeterangan] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
@@ -67,9 +66,9 @@ export function TrackingPage({
   const [selectedIds, setSelectedIds] = useState<string[]>([])
   const [editingRecord, setEditingRecord] = useState<UniformRecord | null>(null)
   const uploadInputRef = useRef<HTMLInputElement>(null)
+  const receiptUploadInputRef = useRef<HTMLInputElement>(null)
   const [isFilterOpen, setIsFilterOpen] = useState(false)
   const [filterSection, setFilterSection] = useState('ALL')
-  const [filterJenisBaju, setFilterJenisBaju] = useState('ALL')
   const [filterUkuran, setFilterUkuran] = useState('ALL')
   const [filterNik, setFilterNik] = useState('')
   const [filterNama, setFilterNama] = useState('')
@@ -93,15 +92,14 @@ export function TrackingPage({
       if (selectedDept !== 'ALL' && item.departemen !== selectedDept) return false
       if (selectedPR !== 'ALL' && item.noPR !== selectedPR) return false
       if (filterSection !== 'ALL' && item.section !== filterSection) return false
-      if (filterJenisBaju !== 'ALL' && item.jenisBaju !== filterJenisBaju) return false
-      if (filterUkuran !== 'ALL' && item.ukuran !== filterUkuran) return false
+      if (filterUkuran !== 'ALL' && item.ukuranBaju !== filterUkuran) return false
       if (selectedStatus === 'dipesan' && item.tglTerima) return false
       if (selectedStatus === 'diterima' && !item.tglTerima) return false
       if (startDateInput && item.tglInput < startDateInput) return false
       if (endDateInput && item.tglInput > endDateInput) return false
       return true
     })
-  }, [records, searchQuery, filterNama, filterNik, selectedDept, selectedStatus, selectedPR, filterSection, filterJenisBaju, filterUkuran, startDateInput, endDateInput])
+  }, [records, searchQuery, filterNama, filterNik, selectedDept, selectedStatus, selectedPR, filterSection, filterUkuran, startDateInput, endDateInput])
 
   const totalPages = Math.max(1, Math.ceil(filteredRecords.length / itemsPerPage))
   const paginatedRecords = useMemo(() => {
@@ -111,6 +109,10 @@ export function TrackingPage({
 
   const handleDeptChange = (dept: string) => {
     setDeptOption(dept)
+    if (dept === '') {
+      setSectionOption('')
+      return
+    }
     if (dept === '__MANUAL__') {
       setSectionOption('__MANUAL__')
       return
@@ -122,16 +124,15 @@ export function TrackingPage({
   const handleResetForm = () => {
     setNamaKaryawan('')
     setNik('')
-    setDeptOption(departments[0])
+    setDeptOption('')
     setCustomDept('')
-    setSectionOption(sectionsMap[departments[0]][0])
+    setSectionOption('')
     setCustomSection('')
-    setJenisBaju(uniformTypes[0])
-    setUkuran(uniformSizes[4])
-    setUkuranCelana(trouserSizes[3])
-    setJumlahStel(1)
-    setNoPR(generateNoPR())
-    setTglInput(new Date().toISOString().split('T')[0])
+    setUkuranBaju('')
+    setUkuranCelana('')
+    setJumlahStel('')
+    setNoPR('')
+    setTglInput('')
     setTglTerima('')
     setKeterangan('')
   }
@@ -157,9 +158,8 @@ export function TrackingPage({
       nik: nik.trim().toUpperCase(),
       departemen: resolvedDept,
       section: resolvedSection,
-      jenisBaju,
-      ukuran,
-      ukuranCelana,
+      ukuranBaju: ukuranBaju || uniformSizes[4],
+      ukuranCelana: ukuranCelana || trouserSizes[3],
       jumlahStel: Number(jumlahStel) || 1,
       noPR: noPR.trim().toUpperCase(),
       tglInput: tglInput || new Date().toISOString().split('T')[0],
@@ -207,9 +207,8 @@ export function TrackingPage({
   }
 
   const uniqueSectionList = useMemo(() => Array.from(new Set(records.map((r) => r.section).filter(Boolean))).sort(), [records])
-  const uniqueJenisList = useMemo(() => Array.from(new Set(records.map((r) => r.jenisBaju).filter(Boolean))).sort(), [records])
-  const uniqueUkuranList = useMemo(() => Array.from(new Set(records.map((r) => r.ukuran).filter(Boolean))).sort(), [records])
-  const hasActiveFilters = searchQuery || filterNama || filterNik || selectedDept !== 'ALL' || selectedStatus !== 'all' || selectedPR !== 'ALL' || filterSection !== 'ALL' || filterJenisBaju !== 'ALL' || filterUkuran !== 'ALL' || startDateInput || endDateInput
+  const uniqueUkuranList = useMemo(() => Array.from(new Set(records.map((r) => r.ukuranBaju).filter(Boolean))).sort(), [records])
+  const hasActiveFilters = searchQuery || filterNama || filterNik || selectedDept !== 'ALL' || selectedStatus !== 'all' || selectedPR !== 'ALL' || filterSection !== 'ALL' || filterUkuran !== 'ALL' || startDateInput || endDateInput
 
   const resetFilters = () => {
     setSearchQuery('')
@@ -219,7 +218,6 @@ export function TrackingPage({
     setSelectedStatus('all')
     setSelectedPR('ALL')
     setFilterSection('ALL')
-    setFilterJenisBaju('ALL')
     setFilterUkuran('ALL')
     setStartDateInput('')
     setEndDateInput('')
@@ -233,7 +231,7 @@ export function TrackingPage({
 
   const downloadTemplate = (kind: 'pengajuan' | 'penerimaan') => {
     const rows = kind === 'pengajuan'
-      ? [{ noPR: '', namaKaryawan: '', NIK: '', departemen: '', section: '', jenisBaju: '', ukuran: '', ukuranCelana: '', jumlahStel: 1, tglInput: '', keterangan: '' }]
+      ? [{ noPR: '', namaKaryawan: '', NIK: '', departemen: '', section: '', ukuranBaju: '', ukuranCelana: '', jumlahStel: 1, tglInput: '', keterangan: '' }]
       : [{ noPR: '', tglTerima: '', keterangan: '' }]
     const sheet = XLSX.utils.json_to_sheet(rows)
     const book = XLSX.utils.book_new()
@@ -245,8 +243,8 @@ export function TrackingPage({
     const sourceRecords = useFilter ? filteredRecords : records
     const rows = sourceRecords.map((record) => ({
       'No. PR': record.noPR, NIK: record.nik, 'Nama Karyawan': record.namaKaryawan,
-      Departemen: record.departemen, Section: record.section, 'Jenis Baju': record.jenisBaju,
-      'Ukuran Baju': record.ukuran, 'Uk. Celana': record.ukuranCelana, Jumlah: record.jumlahStel, 'Tgl Input': record.tglInput,
+      Departemen: record.departemen, Section: record.section,
+      'Ukuran Baju': record.ukuranBaju, 'Ukuran Celana': record.ukuranCelana, Jumlah: record.jumlahStel, 'Tgl Input': record.tglInput,
       'Tgl Terima': record.tglTerima || '', Status: record.tglTerima ? 'Diterima' : 'Dipesan', Keterangan: record.keterangan || '',
     }))
     const sheet = XLSX.utils.json_to_sheet(rows)
@@ -262,9 +260,49 @@ export function TrackingPage({
     const workbook = XLSX.read(data)
     const rows = XLSX.utils.sheet_to_json<Record<string, unknown>>(workbook.Sheets[workbook.SheetNames[0]])
     rows.forEach((row) => {
-      if (row.noPR && row.namaKaryawan) onAddRecord({ id: `import-${Date.now()}-${Math.random()}`, namaKaryawan: String(row.namaKaryawan), nik: String(row.NIK ?? row.nik ?? ''), departemen: String(row.departemen ?? ''), section: String(row.section ?? ''), jenisBaju: String(row.jenisBaju ?? row.jenisSeragam ?? uniformTypes[0]), ukuran: String(row.ukuran ?? uniformSizes[4]), ukuranCelana: String(row.ukuranCelana ?? row['Uk. Celana'] ?? trouserSizes[3]), jumlahStel: Number(row.jumlahStel ?? row.jumlah ?? 1), noPR: String(row.noPR), tglInput: String(row.tglInput ?? ''), tglTerima: null, keterangan: String(row.keterangan ?? '') })
+      if (row.noPR && row.namaKaryawan) onAddRecord({ id: `import-${Date.now()}-${Math.random()}`, namaKaryawan: String(row.namaKaryawan), nik: String(row.NIK ?? row.nik ?? ''), departemen: String(row.departemen ?? ''), section: String(row.section ?? ''), ukuranBaju: String(row.ukuranBaju ?? row.ukuran ?? uniformSizes[4]), ukuranCelana: String(row.ukuranCelana ?? row['Ukuran Celana'] ?? trouserSizes[3]), jumlahStel: Number(row.jumlahStel ?? row.jumlah ?? 1), noPR: String(row.noPR), tglInput: String(row.tglInput ?? ''), tglTerima: null, keterangan: String(row.keterangan ?? '') })
     })
     event.target.value = ''
+  }
+
+  const importPenerimaan = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+
+    const data = await file.arrayBuffer()
+    const workbook = XLSX.read(data)
+    const rows = XLSX.utils.sheet_to_json<Record<string, unknown>>(workbook.Sheets[workbook.SheetNames[0]])
+
+    let updatedCount = 0
+    rows.forEach((row) => {
+      const noPR = String(row.noPR ?? row['No. PR'] ?? '').trim().toUpperCase()
+      const tglTerima = String(row.tglTerima ?? row['Tgl Terima'] ?? row.tanggalTerima ?? '').trim()
+      const keterangan = String(row.keterangan ?? row['Keterangan'] ?? '').trim()
+
+      if (!noPR) return
+
+      const matchedRecord = records.find((record) => record.noPR.trim().toUpperCase() === noPR)
+      if (!matchedRecord) return
+
+      const nextTglTerima = tglTerima || matchedRecord.tglTerima || new Date().toISOString().split('T')[0]
+      const nextKeterangan = keterangan || matchedRecord.keterangan || undefined
+
+      onUpdateRecord({
+        ...matchedRecord,
+        tglTerima: nextTglTerima,
+        keterangan: nextKeterangan,
+      })
+      updatedCount += 1
+    })
+
+    event.target.value = ''
+
+    if (updatedCount === 0) {
+      alert('Tidak ada data penerimaan yang cocok dengan No. PR yang tersedia.')
+      return
+    }
+
+    alert(`Berhasil memperbarui ${updatedCount} data penerimaan.`)
   }
 
   return (
@@ -282,11 +320,12 @@ export function TrackingPage({
 
           <div className="flex flex-wrap items-center gap-2">
             <input ref={uploadInputRef} type="file" accept=".xlsx,.xls,.csv" onChange={importPengajuan} className="hidden" />
-            <button onClick={() => uploadInputRef.current?.click()} className="inline-flex items-center gap-1.5 rounded-xl border border-amber-300 bg-white px-3.5 py-2 text-xs font-semibold text-amber-900 shadow-sm transition-colors hover:bg-amber-50">
+            <button type="button" onClick={() => uploadInputRef.current?.click()} className="inline-flex items-center gap-1.5 rounded-xl border border-amber-300 bg-white px-3.5 py-2 text-xs font-semibold text-amber-900 shadow-sm transition-colors hover:bg-amber-50">
               <Upload className="h-3.5 w-3.5 text-amber-600" />
               <span>Upload Pengajuan</span>
             </button>
-            <button onClick={markSelectedAsReceived} disabled={selectedIds.length === 0} className="inline-flex items-center gap-1.5 rounded-xl border border-emerald-300 bg-white px-3.5 py-2 text-xs font-semibold text-emerald-900 shadow-sm transition-colors hover:bg-emerald-50 disabled:cursor-not-allowed disabled:opacity-50">
+            <input ref={receiptUploadInputRef} type="file" accept=".xlsx,.xls,.csv" onChange={importPenerimaan} className="hidden" />
+            <button type="button" onClick={() => receiptUploadInputRef.current?.click()} className="inline-flex items-center gap-1.5 rounded-xl border border-emerald-300 bg-white px-3.5 py-2 text-xs font-semibold text-emerald-900 shadow-sm transition-colors hover:bg-emerald-50">
               <PackageCheck className="h-3.5 w-3.5 text-emerald-600" />
               <span>Update Penerimaan</span>
             </button>
@@ -309,12 +348,6 @@ export function TrackingPage({
               <Minimize2 className={`h-3.5 w-3.5 transition-transform ${isFormOpen ? '' : 'rotate-180'}`} />
               <span className="sr-only">{isFormOpen ? 'Sembunyikan Form' : 'Tampilkan Form'}</span>
             </button>
-            {hasActiveFilters && (
-              <button onClick={resetFilters} className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-50">
-                <X className="h-3.5 w-3.5" />
-                <span>Reset</span>
-              </button>
-            )}
           </div>
         </div>
 
@@ -335,6 +368,7 @@ export function TrackingPage({
             <div>
               <label className="mb-1.5 block text-[11px] font-semibold text-slate-700">Departemen</label>
               <select value={deptOption} onChange={(e) => handleDeptChange(e.target.value)} className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm">
+                <option value="">Pilih departemen</option>
                 {departments.map((dept) => (
                   <option key={dept} value={dept}>{dept}</option>
                 ))}
@@ -350,10 +384,12 @@ export function TrackingPage({
             <div>
               <label className="mb-1.5 block text-[11px] font-semibold text-slate-700">Section</label>
               <select value={sectionOption} onChange={(e) => setSectionOption(e.target.value)} className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm">
-                {((deptOption === '__MANUAL__' ? ['Manual'] : sectionsMap[deptOption] || [])).map((section) => (
+                {!deptOption && <option value="">Pilih section</option>}
+                {deptOption === '__MANUAL__' && <option value="__MANUAL__">Manual input...</option>}
+                {deptOption && deptOption !== '__MANUAL__' && ((sectionsMap[deptOption] || [])).map((section) => (
                   <option key={section} value={section}>{section}</option>
                 ))}
-                {deptOption !== '__MANUAL__' && <option value="__MANUAL__">Manual input...</option>}
+                {deptOption && deptOption !== '__MANUAL__' && <option value="__MANUAL__">Manual input...</option>}
               </select>
             </div>
             {sectionOption === '__MANUAL__' && (
@@ -363,30 +399,24 @@ export function TrackingPage({
               </div>
             )}
             <div>
-              <label className="mb-1.5 block text-[11px] font-semibold text-slate-700">Jenis Baju</label>
-              <select value={jenisBaju} onChange={(e) => setJenisBaju(e.target.value)} className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm">
-                {uniformTypes.map((type) => (
-                  <option key={type} value={type}>{type}</option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="mb-1.5 block text-[11px] font-semibold text-slate-700">Ukuran</label>
-              <select value={ukuran} onChange={(e) => setUkuran(e.target.value)} className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm">
+              <label className="mb-1.5 block text-[11px] font-semibold text-slate-700">Ukuran Baju</label>
+              <select value={ukuranBaju} onChange={(e) => setUkuranBaju(e.target.value)} className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm">
+                <option value="">Pilih ukuran baju</option>
                 {uniformSizes.map((size) => (
                   <option key={size} value={size}>{size}</option>
                 ))}
               </select>
             </div>
             <div>
-              <label className="mb-1.5 block text-[11px] font-semibold text-slate-700">Uk. Celana</label>
+              <label className="mb-1.5 block text-[11px] font-semibold text-slate-700">Ukuran Celana</label>
               <select value={ukuranCelana} onChange={(e) => setUkuranCelana(e.target.value)} className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm">
+                <option value="">Pilih ukuran celana</option>
                 {trouserSizes.map((size) => <option key={size} value={size}>{size}</option>)}
               </select>
             </div>
             <div>
               <label className="mb-1.5 block text-[11px] font-semibold text-slate-700">Jumlah Stel</label>
-              <input type="number" min={1} value={jumlahStel} onChange={(e) => setJumlahStel(Number(e.target.value || 1))} className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm" />
+              <input type="number" min={1} value={jumlahStel} onChange={(e) => setJumlahStel(e.target.value === '' ? '' : Number(e.target.value))} className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm" placeholder="1" />
             </div>
             <div>
               <label className="mb-1.5 block text-[11px] font-semibold text-slate-700">Tgl Input</label>
@@ -408,18 +438,24 @@ export function TrackingPage({
         )}
       </div>
 
-      <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+      <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-visible">
         <div className="flex flex-col gap-3 border-b border-slate-200 p-4 xl:flex-row xl:items-center xl:justify-between">
           <div className="relative w-full xl:max-w-md">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 h-4 w-4" />
             <input value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Cari nama, NIK, PR, departemen, section..." className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2.5 pl-9 pr-3 text-sm text-slate-700 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20" />
           </div>
           <div className="relative flex items-center gap-2">
+            {hasActiveFilters && (
+              <button onClick={resetFilters} className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-50">
+                <X className="h-3.5 w-3.5" />
+                <span>Reset</span>
+              </button>
+            )}
             <button type="button" onClick={() => setIsFilterOpen((value) => !value)} className={`inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-xs font-semibold ${hasActiveFilters ? 'border-blue-300 bg-blue-50 text-blue-800' : 'border-slate-200 bg-white text-slate-700'}`}><Filter className="h-3.5 w-3.5" /> Filter {hasActiveFilters ? '(aktif)' : ''}</button>
             {isFilterOpen && <div className="absolute right-0 top-11 z-30 grid w-[min(92vw,680px)] gap-3 rounded-2xl border border-slate-200 bg-white p-4 text-xs shadow-xl sm:grid-cols-2 lg:grid-cols-3">
               <label className="grid gap-1 font-semibold">Nama<input value={filterNama} onChange={(e) => setFilterNama(e.target.value)} className="rounded-lg border border-slate-200 px-2.5 py-2 font-normal" placeholder="Cari nama" /></label>
               <label className="grid gap-1 font-semibold">NIK<input value={filterNik} onChange={(e) => setFilterNik(e.target.value)} className="rounded-lg border border-slate-200 px-2.5 py-2 font-normal" placeholder="Cari NIK" /></label>
-              {([['Departemen', selectedDept, setSelectedDept, uniqueDeptFilterList], ['Nomor PR', selectedPR, setSelectedPR, uniquePRList], ['Section', filterSection, setFilterSection, uniqueSectionList], ['Jenis Baju', filterJenisBaju, setFilterJenisBaju, uniqueJenisList], ['Ukuran', filterUkuran, setFilterUkuran, uniqueUkuranList]] as const).map(([label, value, setter, options]) => <label key={label} className="grid gap-1 font-semibold">{label}<select value={value} onChange={(e) => setter(e.target.value)} className="rounded-lg border border-slate-200 px-2.5 py-2 font-normal"><option value="ALL">Semua</option>{options.map((option) => <option key={option} value={option}>{option}</option>)}</select></label>)}
+              {([['Departemen', selectedDept, setSelectedDept, uniqueDeptFilterList], ['Nomor PR', selectedPR, setSelectedPR, uniquePRList], ['Section', filterSection, setFilterSection, uniqueSectionList], ['Ukuran Baju', filterUkuran, setFilterUkuran, uniqueUkuranList]] as const).map(([label, value, setter, options]) => <label key={label} className="grid gap-1 font-semibold">{label}<select value={value} onChange={(e) => setter(e.target.value)} className="rounded-lg border border-slate-200 px-2.5 py-2 font-normal"><option value="ALL">Semua</option>{options.map((option) => <option key={option} value={option}>{option}</option>)}</select></label>)}
               <label className="grid gap-1 font-semibold">Status<select value={selectedStatus} onChange={(e) => setSelectedStatus(e.target.value as typeof selectedStatus)} className="rounded-lg border border-slate-200 px-2.5 py-2 font-normal"><option value="all">Semua</option><option value="dipesan">Dipesan</option><option value="diterima">Diterima</option></select></label>
               <label className="grid gap-1 font-semibold">Tanggal mulai<input type="date" value={startDateInput} onChange={(e) => setStartDateInput(e.target.value)} className="rounded-lg border border-slate-200 px-2.5 py-2 font-normal" /></label>
               <label className="grid gap-1 font-semibold">Tanggal akhir<input type="date" value={endDateInput} onChange={(e) => setEndDateInput(e.target.value)} className="rounded-lg border border-slate-200 px-2.5 py-2 font-normal" /></label>
@@ -439,7 +475,6 @@ export function TrackingPage({
                 <th className="px-4 py-3 font-semibold">NIK</th>
                 <th className="px-4 py-3 font-semibold">Nama Karyawan</th>
                 <th className="px-4 py-3 font-semibold">Departemen &amp; Section</th>
-                <th className="px-4 py-3 font-semibold">Jenis Baju</th>
                 <th className="px-4 py-3 font-semibold">Uk. Baju</th>
                 <th className="px-4 py-3 font-semibold">Uk. Celana</th>
                 <th className="px-4 py-3 font-semibold">Jumlah</th>
@@ -463,8 +498,7 @@ export function TrackingPage({
                     <div>{record.departemen}</div>
                     <div className="mt-0.5 text-xs text-slate-500">{record.section || 'Belum diisi'}</div>
                   </td>
-                  <td className="px-4 py-3 text-slate-700">{record.jenisBaju}</td>
-                  <td className="px-4 py-3"><span className="inline-flex rounded-lg border border-blue-200 bg-blue-50 px-2 py-1 text-xs font-semibold text-blue-700">{record.ukuran}</span></td>
+                  <td className="px-4 py-3"><span className="inline-flex rounded-lg border border-blue-200 bg-blue-50 px-2 py-1 text-xs font-semibold text-blue-700">{record.ukuranBaju}</span></td>
                   <td className="px-4 py-3"><span className="inline-flex rounded-lg border border-amber-200 bg-amber-50 px-2 py-1 text-xs font-semibold text-amber-700">{record.ukuranCelana || '-'}</span></td>
                   <td className="px-4 py-3 text-slate-700">{record.jumlahStel} stel</td>
                   <td className="px-4 py-3 text-slate-700">{formatDate(record.tglInput)}</td>
