@@ -3,7 +3,7 @@
 import Image from 'next/image'
 import React from 'react'
 import * as XLSX from 'xlsx'
-import { ArrowRight, CheckCircle2, FileDown, FileSpreadsheet, LayoutDashboard, Ruler, Shirt, Sparkles, Truck, ClipboardList, Clock3, PackageCheck } from 'lucide-react'
+import { ArrowRight, CheckCircle2, FileDown, FileSpreadsheet, LayoutDashboard, Ruler, Shirt, Sparkles, Truck } from 'lucide-react'
 import type { UniformRecord } from './types'
 
 const SHIRT_CHART = 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-OPZFAIyIy2zr3MuMQzuc1rhDI1zaAy.png'
@@ -36,11 +36,18 @@ export function LandingPage({ records, onNavigateToTracking }: { records: Unifor
             </div>
             <button onClick={onNavigateToTracking} className="inline-flex w-fit items-center gap-2 rounded-xl bg-white px-5 py-3 text-sm font-bold text-primary transition-all shadow-sm hover:-translate-y-0.5 hover:bg-accent"><span>Kelola Data Seragam</span><ArrowRight data-icon="inline-end" /></button>
           </div>
-          <div className="animate-fade-up animate-delay-2 grid grid-cols-2 gap-3 sm:gap-4">
-            <Stat label="Total pengajuan" value={records.length} icon={<ClipboardList className="h-4 w-4" />} />
-            <Stat label="Menunggu" value={pending} icon={<Clock3 className="h-4 w-4" />} />
-            <Stat label="Sudah diterima" value={received} icon={<PackageCheck className="h-4 w-4" />} />
-            <Stat label="Total stel" value={totalStel} icon={<Shirt className="h-4 w-4" />} />
+          <div className="animate-fade-up animate-delay-2 relative flex min-h-72 items-center justify-center overflow-hidden rounded-[1.75rem] border border-white/15 bg-gradient-to-br from-white/15 via-primary-foreground/5 to-slate-950/40 p-8 shadow-inner">
+            <div className="absolute -left-16 -top-16 h-48 w-48 rounded-full bg-cyan-300/20 blur-3xl" aria-hidden="true" />
+            <div className="absolute -bottom-20 -right-12 h-56 w-56 rounded-full bg-blue-950/70 blur-3xl" aria-hidden="true" />
+            <div className="relative flex flex-col items-center gap-5 text-center">
+              <div className="rounded-2xl bg-white p-3 shadow-2xl ring-1 ring-white/40 transition-transform duration-500 hover:scale-105">
+                <Image src="/yazaki-logo.jpeg" alt="Logo Yazaki" width={260} height={104} className="h-auto w-52 object-contain sm:w-60" />
+              </div>
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.28em] text-primary-foreground/60">Uniform management system</p>
+                <p className="mt-2 text-sm font-medium text-primary-foreground/85">PT Jatim Autocomp Indonesia</p>
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -59,10 +66,6 @@ export function LandingPage({ records, onNavigateToTracking }: { records: Unifor
       </section>
     </div>
   )
-}
-
-function Stat({ label, value, icon }: { label: string; value: number; icon: React.ReactNode }) {
-  return <div className="rounded-2xl border border-primary-foreground/10 bg-primary-foreground/10 p-4"><div className="mb-5 flex items-center justify-between text-primary-foreground/65"><span className="text-xs font-medium">{label}</span><span className="text-accent">{icon}</span></div><strong className="text-3xl">{value}</strong></div>
 }
 
 function ChartCard({ title, description, src }: { title: string; description: string; src: string }) {
