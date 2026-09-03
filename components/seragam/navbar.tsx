@@ -1,6 +1,7 @@
 'use client'
 
-import { Calendar, Home, Layers, LogOut, Shirt } from 'lucide-react'
+import Image from 'next/image'
+import { Calendar, Home, Layers, LogOut } from 'lucide-react'
 import type { UserSession } from './types'
 
 export function Navbar({ currentView, onNavigate, user, onLogout }: { currentView: 'landing' | 'tracking'; onNavigate: (view: 'landing' | 'tracking') => void; user: UserSession; onLogout: () => void }) {
@@ -11,22 +12,21 @@ export function Navbar({ currentView, onNavigate, user, onLogout }: { currentVie
   })
 
   return (
-    <header className="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-xs no-print">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 flex items-center justify-between">
-        <div onClick={() => onNavigate('landing')} className="flex items-center gap-3.5 cursor-pointer group select-none" id="navbar-brand-logo">
-          <div className="w-10 h-10 rounded-xl bg-[#143254] flex items-center justify-center text-white shadow-xs group-hover:bg-[#1d4470] transition-colors">
-            <Shirt className="w-5 h-5 stroke-[2.2]" />
+    <header className="sticky top-0 z-40 border-b border-border bg-card/95 shadow-sm backdrop-blur no-print">
+      <div className="mx-auto flex min-h-16 max-w-7xl items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
+        <button onClick={() => onNavigate('landing')} className="group flex min-w-0 items-center gap-3 text-left select-none" id="navbar-brand-logo" aria-label="Kembali ke menu utama">
+          <div className="flex h-10 w-16 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-white p-1 shadow-sm ring-1 ring-border">
+            <Image src="/yazaki-logo.jpeg" alt="Logo Yazaki" width={120} height={48} className="h-full w-full object-contain" priority />
           </div>
-          <div>
-            <h1 className="text-base font-bold text-slate-900 leading-tight tracking-tight flex items-center gap-2">
+          <div className="min-w-0">
+            <h1 className="flex items-center gap-2 truncate text-sm font-bold leading-tight tracking-tight text-foreground sm:text-base">
               Seragam JAI
             </h1>
-            <p className="text-xs font-medium text-slate-500">PT Jatim Autocomp Indonesia</p>
+            <p className="truncate text-[11px] font-medium text-muted-foreground sm:text-xs">PT Jatim Autocomp Indonesia</p>
           </div>
-        </div>
-
-        <div className="flex items-center gap-3 sm:gap-4">
-          <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-xs font-medium text-slate-600">
+        </button>
+        <div className="flex items-center gap-2 sm:gap-4">
+          <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-muted border border-border text-xs font-medium text-muted-foreground">
             <Calendar className="w-3.5 h-3.5 text-slate-400" />
             <span>{currentDate}</span>
           </div>
