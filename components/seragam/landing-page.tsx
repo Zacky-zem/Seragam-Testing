@@ -37,14 +37,11 @@ export function LandingPage({ records, onNavigateToTracking }: { records: Unifor
             <button onClick={onNavigateToTracking} className="inline-flex w-fit items-center gap-2 rounded-xl bg-white px-5 py-3 text-sm font-bold text-primary transition-all shadow-sm hover:-translate-y-0.5 hover:bg-accent"><span>Kelola Data Seragam</span><ArrowRight data-icon="inline-end" /></button>
           </div>
           <div className="animate-fade-up animate-delay-2 relative flex min-h-72 items-center justify-center overflow-hidden p-2 sm:min-h-80 lg:min-h-[22rem]">
-            <div className="pointer-events-none absolute inset-y-0 right-[-12%] w-[112%] bg-gradient-to-l from-transparent via-primary/20 to-primary/95" aria-hidden="true" />
-            <div className="pointer-events-none absolute -right-16 top-1/2 h-72 w-72 -translate-y-1/2 rounded-full bg-cyan-300/15 blur-3xl" aria-hidden="true" />
-            <div className="relative flex flex-col items-center gap-5 text-center transition-transform duration-700 hover:scale-105">
-              <Image src="/yazaki-logo.jpeg" alt="Logo Yazaki" width={520} height={208} className="h-auto w-[min(92%,30rem)] object-contain mix-blend-screen opacity-95 drop-shadow-[0_18px_24px_rgba(0,0,0,0.3)]" />
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.28em] text-primary-foreground/60">Uniform management system</p>
-                <p className="mt-2 text-sm font-medium text-primary-foreground/85">PT Jatim Autocomp Indonesia</p>
-              </div>
+            <div className="pointer-events-none absolute inset-y-0 right-[-18%] w-[125%] bg-gradient-to-l from-transparent via-primary/15 to-primary/90" aria-hidden="true" />
+            <div className="pointer-events-none absolute -right-24 top-1/2 h-96 w-96 -translate-y-1/2 rounded-full bg-cyan-300/20 blur-3xl" aria-hidden="true" />
+            <div className="pointer-events-none absolute bottom-0 right-0 h-32 w-3/4 bg-gradient-to-t from-slate-950/35 to-transparent blur-2xl" aria-hidden="true" />
+            <div className="relative flex items-center justify-center transition-transform duration-700 hover:scale-105">
+              <Image src="/yazaki-logo.jpeg" alt="Logo Yazaki" width={720} height={288} className="h-auto w-[min(125%,42rem)] object-contain opacity-25 mix-blend-screen brightness-0 invert drop-shadow-[0_18px_28px_rgba(0,0,0,0.35)] sm:w-[min(120%,46rem)]" />
             </div>
           </div>
         </div>
