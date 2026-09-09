@@ -1,10 +1,15 @@
 'use client'
 
-import Image from 'next/image'
+import { useRouter } from 'next/navigation'
 import { Calendar, Home, Layers, LogOut } from 'lucide-react'
 import type { UserSession } from './types'
 
 export function Navbar({ currentView, onNavigate, user, onLogout }: { currentView: 'landing' | 'tracking'; onNavigate: (view: 'landing' | 'tracking') => void; user: UserSession; onLogout: () => void }) {
+  const router = useRouter()
+  const navigate = (view: 'landing' | 'tracking') => {
+    onNavigate(view)
+    router.push(view === 'landing' ? '/landingpage' : '/seragam')
+  }
   const currentDate = new Date().toLocaleDateString('id-ID', {
     day: 'numeric',
     month: 'long',
@@ -14,7 +19,7 @@ export function Navbar({ currentView, onNavigate, user, onLogout }: { currentVie
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-card/95 shadow-sm backdrop-blur no-print">
       <div className="mx-auto flex min-h-16 max-w-7xl items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
-        <button onClick={() => onNavigate('landing')} className="group flex min-w-0 items-center gap-3 text-left select-none" id="navbar-brand-logo" aria-label="Kembali ke menu utama">
+        <button onClick={() => navigate('landing')} className="group flex min-w-0 items-center gap-3 text-left select-none" id="navbar-brand-logo" aria-label="Kembali ke menu utama">
           <div className="min-w-0">
           </div>
         </button>
@@ -27,7 +32,7 @@ export function Navbar({ currentView, onNavigate, user, onLogout }: { currentVie
           {currentView === 'tracking' ? (
             <button
               id="btn-nav-home"
-              onClick={() => onNavigate('landing')}
+              onClick={() => navigate('landing')}
               className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 transition-colors"
             >
               <Home className="w-3.5 h-3.5 text-slate-600" />
@@ -36,7 +41,7 @@ export function Navbar({ currentView, onNavigate, user, onLogout }: { currentVie
           ) : (
             <button
               id="btn-nav-tracking"
-              onClick={() => onNavigate('tracking')}
+              onClick={() => navigate('tracking')}
               className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-semibold text-white bg-[#143254] hover:bg-[#1d4470] transition-colors shadow-xs"
             >
               <Layers className="w-3.5 h-3.5" />

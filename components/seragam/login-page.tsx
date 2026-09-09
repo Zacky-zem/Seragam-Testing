@@ -1,6 +1,5 @@
 'use client'
 
-import Image from 'next/image'
 import React, { useState } from 'react'
 import { AlertCircle, ArrowRight, Lock, ShieldCheck, User } from 'lucide-react'
 
@@ -33,9 +32,12 @@ export function LoginPage({ onLogin }: { onLogin: (username: string, password: s
   }
 
   return (
-    <div className="min-h-screen w-full flex flex-col lg:flex-row bg-background">
-      <div className="w-full lg:w-1/2 flex flex-col justify-between p-6 sm:p-12 lg:p-16 xl:p-24 bg-card">
-        <div className="flex items-center gap-3">
+    <div className="relative min-h-screen w-full overflow-hidden bg-[#f3f7fb] lg:flex lg:flex-row">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(30,112,168,0.12),transparent_35%)]" aria-hidden="true" />
+      <div className="relative flex w-full flex-col justify-between p-6 sm:p-12 lg:w-1/2 lg:p-16 xl:p-24">
+        <div className="flex items-center gap-3 text-[#0b3154]">
+          <div className="flex size-11 items-center justify-center rounded-2xl bg-[#0b3154] text-lg font-black text-white shadow-lg shadow-[#0b3154]/20">J</div>
+          <div><p className="text-sm font-black tracking-[0.18em]">JAI UNIFORM</p><p className="text-[11px] font-medium text-slate-500">Sistem distribusi seragam</p></div>
         </div>
 
         <div className="my-auto max-w-md w-full mx-auto py-8">
@@ -105,11 +107,6 @@ export function LoginPage({ onLogin }: { onLogin: (username: string, password: s
             </div>
           </form>
 
-          <div className="mt-6 p-3 bg-muted border border-border rounded-xl text-center">
-            <p className="text-[11px] text-muted-foreground">
-              Demo Access: User <span className="font-semibold text-foreground">admin</span> / Password <span className="font-semibold text-foreground">admin123</span>
-            </p>
-          </div>
         </div>
 
         <div className="text-xs text-muted-foreground text-center lg:text-left flex items-center justify-center lg:justify-start gap-1.5">
@@ -130,16 +127,6 @@ export function LoginPage({ onLogin }: { onLogin: (username: string, password: s
             Kelola data pengajuan seragam dan catat update kedatangan seragam dengan cepat, akurat, dan terstruktur.
           </p>
 
-          <div className="mt-10 grid grid-cols-2 gap-4">
-            <div className="rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur-sm">
-              <p className="text-2xl font-bold text-primary-foreground">24/7</p>
-              <p className="mt-1 text-xs text-primary-foreground/75">Monitoring data</p>
-            </div>
-            <div className="rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur-sm">
-              <p className="text-2xl font-bold text-primary-foreground">100%</p>
-              <p className="mt-1 text-xs text-primary-foreground/75">Terkonsolidasi</p>
-            </div>
-          </div>
         </div>
       </div>
     </div>

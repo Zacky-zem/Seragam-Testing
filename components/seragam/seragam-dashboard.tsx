@@ -1,6 +1,7 @@
 ﻿'use client'
 
 import { useEffect, useState } from 'react'
+import { usePathname, useRouter } from 'next/navigation'
 import { AlertCircle, CheckCircle2, Info, X } from 'lucide-react'
 import { LandingPage } from './landing-page'
 import { LoginPage } from './login-page'
@@ -47,10 +48,34 @@ const toApiPayload = (record: UniformRecord) => ({
 })
 
 export default function SeragamDashboard() {
+  const pathname = usePathname()
+  const router = useRouter()
   const [user, setUser] = useState<UserSession | null>(null)
   const [records, setRecords] = useState<UniformRecord[]>([])
-  const [currentView, setCurrentView] = useState<'landing' | 'tracking'>('landing')
+  const [currentView, setCurrentView] = useState<'landing' | 'tracking'>(pathname === '/seragam' ? 'tracking' : 'landing')
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'info' | 'error' } | null>(null)
+
+  useEffect(() => {
+    let active = true
+    fetch('/api/auth')
+      .then(async (response) => {
+        if (!response.ok) return null
+        const data = await response.json()
+        return data.user
+      })
+      .then((sessionUser) => {
+        if (!active) return
+        if (sessionUser) {
+          setUser({ username: sessionUser.username, fullName: sessionUser.name, role: 'admin', isLoggedIn: true })
+        } else if (pathname !== '/login') {
+          router.replace('/login')
+        }
+      })
+      .catch(() => {
+        if (active && pathname !== '/login') router.replace('/login')
+      })
+    return () => { active = false }
+  }, [pathname, router])
 
   const showToast = (message: string, type: 'success' | 'info' | 'error' = 'success') => {
     setToast({ message, type })
@@ -99,6 +124,7 @@ export default function SeragamDashboard() {
         isLoggedIn: true,
       })
       setCurrentView('landing')
+      router.push('/landingpage')
       showToast('Selamat datang kembali, Administrator GA!', 'success')
     } catch (error) {
       showToast(error instanceof Error ? error.message : 'Login gagal.', 'error')
@@ -113,6 +139,7 @@ export default function SeragamDashboard() {
     } finally {
       setUser(null)
       setCurrentView('landing')
+      router.replace('/login')
       showToast('Anda telah berhasil logout dari sistem.', 'info')
     }
   }
