@@ -1,11 +1,9 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { dateOnlyToUtc } from '@/lib/date-utils'
 
 const toDate = (value: unknown) => {
-  if (!value) return null
-
-  const date = new Date(value as string)
-  return Number.isNaN(date.getTime()) ? null : date
+  return dateOnlyToUtc(value)
 }
 
 export async function GET(request: Request) {
@@ -23,25 +21,32 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Format data tidak valid.' }, { status: 400 })
   }
 
-  const noPR = String(body.noPR ?? '').trim().toUpperCase()
+  const noPRValue = String(body.noPR ?? '').trim().toUpperCase()
+  const noPR = noPRValue || null
   const namaKaryawan = String(body.namaKaryawan ?? '').trim()
   const departemen = String(body.departemen ?? '').trim()
   const ukuranBaju = String(body.ukuranBaju ?? body.ukuran ?? '').trim()
   const jumlah = Number(body.jumlah ?? 1)
-  if (!noPR || !namaKaryawan || !departemen || !ukuranBaju) {
+  if (!namaKaryawan || !departemen || !ukuranBaju) {
     return NextResponse.json({ error: 'Field wajib belum lengkap' }, { status: 400 })
   }
   if (!Number.isInteger(jumlah) || jumlah < 1) {
     return NextResponse.json({ error: 'Jumlah stel harus berupa bilangan bulat minimal 1.' }, { status: 400 })
   }
 
-  const existing = await prisma.uniformRecord.findUnique({ where: { noPR } })
+  const existing = noPR ? await prisma.uniformRecord.findUnique({ where: { noPR } }) : null
   if (existing) {
     return NextResponse.json({ error: `Nomor PR ${body.noPR} sudah terdaftar. Silakan gunakan nomor PR lain atau edit data yang ada.` }, { status: 409 })
   }
 
   const tanggalPengajuan = toDate(body.tanggalPengajuan) ?? new Date()
   const tanggalPenerimaan = body.tanggalPenerimaan ? toDate(body.tanggalPenerimaan) : null
+  if (body.tanggalPengajuan && !toDate(body.tanggalPengajuan)) {
+    return NextResponse.json({ error: 'Tanggal input tidak valid.' }, { status: 400 })
+  }
+  if (body.tanggalPenerimaan && !tanggalPenerimaan) {
+    return NextResponse.json({ error: 'Tanggal terima tidak valid.' }, { status: 400 })
+  }
   const keterangan = typeof body.keterangan === 'string' ? body.keterangan.trim() || null : null
 
   try {
@@ -56,6 +61,7 @@ export async function POST(request: Request) {
         ukuranCelana: body.ukuranCelana ? String(body.ukuranCelana) : null,
         jumlah,
         status: body.status ? String(body.status) : 'Diajukan',
+        batch: body.batch ? String(body.batch).trim() : null,
         tanggalPengajuan,
         tanggalPenerimaan,
         keterangan,
@@ -84,7 +90,7 @@ export async function PATCH(request: Request) {
     const record = await prisma.uniformRecord.update({
       where: { id },
       data: {
-        ...(payload.noPR !== undefined ? { noPR: String(payload.noPR).trim() } : {}),
+        ...(payload.noPR !== undefined ? { noPR: String(payload.noPR ?? '').trim().toUpperCase() || null } : {}),
         ...(payload.namaKaryawan !== undefined ? { namaKaryawan: String(payload.namaKaryawan).trim() } : {}),
         ...(payload.nip !== undefined ? { nip: payload.nip ? String(payload.nip).trim() : null } : {}),
         ...(payload.departemen !== undefined ? { departemen: String(payload.departemen).trim() } : {}),
@@ -93,6 +99,7 @@ export async function PATCH(request: Request) {
         ...(payload.ukuranCelana !== undefined ? { ukuranCelana: payload.ukuranCelana ? String(payload.ukuranCelana) : null } : {}),
         ...(payload.jumlah !== undefined ? { jumlah: Math.max(1, Number(payload.jumlah) || 1) } : {}),
         ...(payload.status !== undefined ? { status: String(payload.status) } : {}),
+        ...(payload.batch !== undefined ? { batch: payload.batch ? String(payload.batch).trim() : null } : {}),
         ...(tanggalPengajuan ? { tanggalPengajuan } : {}),
         ...(tanggalPenerimaan !== undefined ? { tanggalPenerimaan } : {}),
         ...(payload.status === 'Diterima' && !payload.tanggalPenerimaan ? { tanggalPenerimaan: new Date() } : {}),

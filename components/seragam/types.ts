@@ -17,5 +17,6 @@ export type UniformRecord = {
   noPR: string
   tglInput: string
   tglTerima: string | null
+  batch?: string
   keterangan?: string
 }

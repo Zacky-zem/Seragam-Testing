@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react'
 import { X } from 'lucide-react'
 import { departments, sectionsMap, trouserSizes, uniformSizes } from './data'
 import type { UniformRecord } from './types'
+import { parseFlexibleDate } from '@/lib/date-utils'
 
 export function EditRecordModal({
   record,
@@ -104,6 +105,11 @@ export function EditRecordModal({
           <div>
             <label className="mb-1.5 block text-[11px] font-semibold text-slate-700">Tanggal Terima</label>
             <input type="date" value={form.tglTerima || ''} onChange={(e) => updateField('tglTerima', e.target.value || null)} className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm" />
+          </div>
+
+          <div>
+            <label className="mb-1.5 block text-[11px] font-semibold text-slate-700">Batch</label>
+            <input value={form.batch || ''} onChange={(e) => updateField('batch', e.target.value)} className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm" />
           </div>
 
           <div className="md:col-span-2">

@@ -8,6 +8,12 @@ import { Navbar } from './navbar'
 import { TrackingPage } from './tracking-page'
 import type { UniformRecord, UserSession } from './types'
 
+const toLocalDateInputValue = (value: string | Date) => {
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return ''
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
+}
+
 const normalizeRecord = (record: any): UniformRecord => ({
   id: record.id ?? record.noPR,
   namaKaryawan: record.namaKaryawan ?? 'Unknown',
@@ -18,13 +24,14 @@ const normalizeRecord = (record: any): UniformRecord => ({
   ukuranCelana: record.ukuranCelana ?? '',
   jumlahStel: Number(record.jumlah ?? 1),
   noPR: record.noPR ?? '',
-  tglInput: record.tanggalPengajuan ? new Date(record.tanggalPengajuan).toISOString().split('T')[0] : '',
-  tglTerima: record.tanggalPenerimaan ? new Date(record.tanggalPenerimaan).toISOString().split('T')[0] : null,
+  tglInput: record.tanggalPengajuan ? toLocalDateInputValue(record.tanggalPengajuan) : '',
+  tglTerima: record.tanggalPenerimaan ? toLocalDateInputValue(record.tanggalPenerimaan) : null,
+  batch: record.batch ?? '',
   keterangan: record.keterangan ?? undefined,
 })
 
 const toApiPayload = (record: UniformRecord) => ({
-  noPR: record.noPR,
+  noPR: record.noPR || null,
   namaKaryawan: record.namaKaryawan,
   nip: record.nik,
   departemen: record.departemen,
@@ -35,6 +42,7 @@ const toApiPayload = (record: UniformRecord) => ({
   status: record.tglTerima ? 'Diterima' : 'Diajukan',
   tanggalPengajuan: record.tglInput || new Date().toISOString().split('T')[0],
   tanggalPenerimaan: record.tglTerima || null,
+  batch: record.batch || null,
   keterangan: record.keterangan || null,
 })
 

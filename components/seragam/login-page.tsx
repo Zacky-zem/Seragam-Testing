@@ -36,13 +36,6 @@ export function LoginPage({ onLogin }: { onLogin: (username: string, password: s
     <div className="min-h-screen w-full flex flex-col lg:flex-row bg-background">
       <div className="w-full lg:w-1/2 flex flex-col justify-between p-6 sm:p-12 lg:p-16 xl:p-24 bg-card">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-24 items-center justify-center overflow-hidden rounded-lg bg-white p-1 shadow-sm ring-1 ring-border">
-            <Image src="/yazaki-logo.jpeg" alt="Logo Yazaki" width={144} height={58} className="h-full w-full object-contain" priority />
-          </div>
-          <div>
-            <p className="text-xs font-bold text-foreground">Seragam JAI</p>
-            <p className="text-[11px] text-muted-foreground">PT Jatim Autocomp Indonesia</p>
-          </div>
         </div>
 
         <div className="my-auto max-w-md w-full mx-auto py-8">
@@ -129,9 +122,6 @@ export function LoginPage({ onLogin }: { onLogin: (username: string, password: s
         <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#ffffff_1px,transparent_1px)] [background-size:20px_20px]" />
 
         <div className="relative z-10 max-w-md text-left">
-          <span className="inline-flex items-center rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs font-medium tracking-[0.2em] text-primary-foreground/75 uppercase">
-            Uniform System
-          </span>
 
           <h3 className="mt-6 text-4xl font-extrabold tracking-tight text-primary-foreground leading-tight mb-4">
             One source of truth for uniform tracking.

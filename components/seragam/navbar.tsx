@@ -15,14 +15,7 @@ export function Navbar({ currentView, onNavigate, user, onLogout }: { currentVie
     <header className="sticky top-0 z-40 border-b border-border bg-card/95 shadow-sm backdrop-blur no-print">
       <div className="mx-auto flex min-h-16 max-w-7xl items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
         <button onClick={() => onNavigate('landing')} className="group flex min-w-0 items-center gap-3 text-left select-none" id="navbar-brand-logo" aria-label="Kembali ke menu utama">
-          <div className="flex h-10 w-16 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-white p-1 shadow-sm ring-1 ring-border">
-            <Image src="/yazaki-logo.jpeg" alt="Logo Yazaki" width={120} height={48} className="h-full w-full object-contain" priority />
-          </div>
           <div className="min-w-0">
-            <h1 className="flex items-center gap-2 truncate text-sm font-bold leading-tight tracking-tight text-foreground sm:text-base">
-              Seragam JAI
-            </h1>
-            <p className="truncate text-[11px] font-medium text-muted-foreground sm:text-xs">PT Jatim Autocomp Indonesia</p>
           </div>
         </button>
         <div className="flex items-center gap-2 sm:gap-4">

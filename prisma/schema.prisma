@@ -17,7 +17,7 @@ model User {
 
 model UniformRecord {
   id                String    @id @default(cuid())
-  noPR              String    @unique
+  noPR              String?   @unique
   namaKaryawan      String
   nip               String?
   departemen        String
@@ -28,6 +28,7 @@ model UniformRecord {
   tanggalPengajuan  DateTime?
   tanggalPenerimaan DateTime?
   status            String    @default("Diajukan")
+  batch             String?
   keterangan        String?
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt

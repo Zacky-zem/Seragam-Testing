@@ -21,11 +21,42 @@ import * as XLSX from 'xlsx'
 import { departments, sectionsMap, trouserSizes, uniformSizes } from './data'
 import type { UniformRecord } from './types'
 import { EditRecordModal } from './edit-record-modal'
+import { parseFlexibleDate } from '@/lib/date-utils'
 
 const generateNoPR = () => {
   const year = new Date().getFullYear()
   const randomPart = Math.floor(1000 + Math.random() * 9000)
   return `PR-${year}-JAI-${randomPart}`
+}
+
+const getCell = (row: Record<string, unknown>, ...keys: string[]) => {
+  const entry = Object.entries(row).find(([key]) => keys.some((candidate) => key.trim().toLowerCase() === candidate.toLowerCase()))
+  return entry?.[1]
+}
+
+const toLocalDateInputValue = (date: Date) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
+
+const getExcelDate = (value: unknown) => {
+  if (!value) return ''
+  if (value instanceof Date) return toLocalDateInputValue(value)
+  if (typeof value === 'number') {
+    const parsed = XLSX.SSF.parse_date_code(value)
+    if (parsed) return `${parsed.y}-${String(parsed.m).padStart(2, '0')}-${String(parsed.d).padStart(2, '0')}`
+  }
+  const text = String(value).trim()
+  if (!text) return ''
+  if (/^\d+(\.\d+)?$/.test(text)) {
+    const parsed = XLSX.SSF.parse_date_code(Number(text))
+    if (parsed) return `${parsed.y}-${String(parsed.m).padStart(2, '0')}-${String(parsed.d).padStart(2, '0')}`
+  }
+  return parseFlexibleDate(text) ?? text
+}
+
+const getImportRows = (workbook: XLSX.WorkBook) => {
+  const sheet = workbook.Sheets[workbook.SheetNames[0]]
+  const matrix = XLSX.utils.sheet_to_json<unknown[]>(sheet, { header: 1, defval: '' })
+  const headerIndex = matrix.findIndex((row) => row.some((cell) => ['nama', 'nama karyawan'].includes(String(cell).trim().toLowerCase())) && row.some((cell) => String(cell).trim().toLowerCase() === 'nik'))
+  return XLSX.utils.sheet_to_json<Record<string, unknown>>(sheet, { range: headerIndex >= 0 ? headerIndex : 0, defval: '' })
 }
 
 export function TrackingPage({
@@ -51,6 +82,7 @@ export function TrackingPage({
   const [ukuranCelana, setUkuranCelana] = useState('')
   const [jumlahStel, setJumlahStel] = useState<number | ''>('')
   const [noPR, setNoPR] = useState('')
+  const [batch, setBatch] = useState('')
   const [tglInput, setTglInput] = useState('')
   const [tglTerima, setTglTerima] = useState('')
   const [keterangan, setKeterangan] = useState('')
@@ -132,6 +164,7 @@ export function TrackingPage({
     setUkuranCelana('')
     setJumlahStel('')
     setNoPR('')
+    setBatch('')
     setTglInput('')
     setTglTerima('')
     setKeterangan('')
@@ -139,10 +172,23 @@ export function TrackingPage({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    if (!namaKaryawan.trim() || !nik.trim() || !noPR.trim()) {
-      alert('Nama Karyawan, NIK, dan Nomor PR wajib diisi.')
+    if (!namaKaryawan.trim() || !nik.trim()) {
+      alert('Nama Karyawan dan NIK wajib diisi.')
       return
     }
+
+    const parsedTglInput = tglInput ? parseFlexibleDate(tglInput) : null
+    const parsedTglTerima = tglTerima ? parseFlexibleDate(tglTerima) : null
+    if (tglInput && !parsedTglInput) {
+      alert('Format Tgl Input tidak valid. Gunakan contoh 17-08-2026, 17/08/2026, atau 17 Agustus 2026.')
+      return
+    }
+    if (tglTerima && !parsedTglTerima) {
+      alert('Format Tanggal Terima tidak valid. Gunakan contoh 17-08-2026, 17/08/2026, atau 17 Agustus 2026.')
+      return
+    }
+    const normalizedTglInput = parsedTglInput ?? new Date().toISOString().split('T')[0]
+    const normalizedTglTerima = parsedTglTerima
 
     const resolvedDept = deptOption === '__MANUAL__' ? customDept.trim() : deptOption
     const resolvedSection = sectionOption === '__MANUAL__' ? customSection.trim() : sectionOption
@@ -162,8 +208,9 @@ export function TrackingPage({
       ukuranCelana: ukuranCelana || trouserSizes[3],
       jumlahStel: Number(jumlahStel) || 1,
       noPR: noPR.trim().toUpperCase(),
-      tglInput: tglInput || new Date().toISOString().split('T')[0],
-      tglTerima: tglTerima || null,
+      tglInput: normalizedTglInput,
+      tglTerima: normalizedTglTerima,
+      batch: batch.trim(),
       keterangan: keterangan.trim() || undefined,
     }
 
@@ -229,23 +276,13 @@ export function TrackingPage({
     return new Date(`${value}T00:00:00`).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })
   }
 
-  const downloadTemplate = (kind: 'pengajuan' | 'penerimaan') => {
-    const rows = kind === 'pengajuan'
-      ? [{ noPR: '', namaKaryawan: '', NIK: '', departemen: '', section: '', ukuranBaju: '', ukuranCelana: '', jumlahStel: 1, tglInput: '', keterangan: '' }]
-      : [{ noPR: '', tglTerima: '', keterangan: '' }]
-    const sheet = XLSX.utils.json_to_sheet(rows)
-    const book = XLSX.utils.book_new()
-    XLSX.utils.book_append_sheet(book, sheet, 'Template')
-    XLSX.writeFile(book, `template-${kind}.xlsx`)
-  }
-
   const exportExcel = (useFilter = true) => {
     const sourceRecords = useFilter ? filteredRecords : records
     const rows = sourceRecords.map((record) => ({
       'No. PR': record.noPR, NIK: record.nik, 'Nama Karyawan': record.namaKaryawan,
       Departemen: record.departemen, Section: record.section,
       'Ukuran Baju': record.ukuranBaju, 'Ukuran Celana': record.ukuranCelana, Jumlah: record.jumlahStel, 'Tgl Input': record.tglInput,
-      'Tgl Terima': record.tglTerima || '', Status: record.tglTerima ? 'Diterima' : 'Dipesan', Keterangan: record.keterangan || '',
+      'Tgl Terima': record.tglTerima || '', Status: record.tglTerima ? 'Diterima' : 'Dipesan', Batch: record.batch || '', Keterangan: record.keterangan || '',
     }))
     const sheet = XLSX.utils.json_to_sheet(rows)
     const book = XLSX.utils.book_new()
@@ -258,9 +295,13 @@ export function TrackingPage({
     if (!file) return
     const data = await file.arrayBuffer()
     const workbook = XLSX.read(data)
-    const rows = XLSX.utils.sheet_to_json<Record<string, unknown>>(workbook.Sheets[workbook.SheetNames[0]])
+    const rows = getImportRows(workbook)
     rows.forEach((row) => {
-      if (row.noPR && row.namaKaryawan) onAddRecord({ id: `import-${Date.now()}-${Math.random()}`, namaKaryawan: String(row.namaKaryawan), nik: String(row.NIK ?? row.nik ?? ''), departemen: String(row.departemen ?? ''), section: String(row.section ?? ''), ukuranBaju: String(row.ukuranBaju ?? row.ukuran ?? uniformSizes[4]), ukuranCelana: String(row.ukuranCelana ?? row['Ukuran Celana'] ?? trouserSizes[3]), jumlahStel: Number(row.jumlahStel ?? row.jumlah ?? 1), noPR: String(row.noPR), tglInput: String(row.tglInput ?? ''), tglTerima: null, keterangan: String(row.keterangan ?? '') })
+      const nama = String(getCell(row, 'namaKaryawan', 'nama', 'nama karyawan') ?? '').trim()
+      const nik = String(getCell(row, 'NIK', 'nik') ?? '').trim()
+      if (!nama || !nik) return
+      const jenisBaju = String(getCell(row, 'ukuranBaju', 'ukuran', 'jenis baju') ?? uniformSizes[4])
+      onAddRecord({ id: `import-${Date.now()}-${Math.random()}`, namaKaryawan: nama, nik, departemen: String(getCell(row, 'departemen') ?? ''), section: String(getCell(row, 'section') ?? ''), ukuranBaju: uniformSizes.includes(jenisBaju) ? jenisBaju : (uniformSizes.find((size) => jenisBaju.toLowerCase().endsWith(size.toLowerCase())) ?? uniformSizes[4]), ukuranCelana: String(getCell(row, 'ukuranCelana', 'ukuran celana', 'uk celana') ?? trouserSizes[3]), jumlahStel: Number(getCell(row, 'jumlahStel', 'jumlah', 'jml stel') ?? 1) || 1, noPR: String(getCell(row, 'noPR', 'No. PR') ?? '').trim().toUpperCase(), tglInput: getExcelDate(getCell(row, 'tglInput', 'Tgl Input')), tglTerima: getExcelDate(getCell(row, 'tglTerima', 'Tgl Terima')), batch: String(getCell(row, 'batch') ?? '').trim(), keterangan: String(getCell(row, 'keterangan', 'Keterangan', 'ket') ?? '').trim() })
     })
     event.target.value = ''
   }
@@ -271,17 +312,21 @@ export function TrackingPage({
 
     const data = await file.arrayBuffer()
     const workbook = XLSX.read(data)
-    const rows = XLSX.utils.sheet_to_json<Record<string, unknown>>(workbook.Sheets[workbook.SheetNames[0]])
+    const rows = getImportRows(workbook)
 
     let updatedCount = 0
     rows.forEach((row) => {
-      const noPR = String(row.noPR ?? row['No. PR'] ?? '').trim().toUpperCase()
-      const tglTerima = String(row.tglTerima ?? row['Tgl Terima'] ?? row.tanggalTerima ?? '').trim()
-      const keterangan = String(row.keterangan ?? row['Keterangan'] ?? '').trim()
+      const noPR = String(getCell(row, 'noPR', 'No. PR') ?? '').trim().toUpperCase()
+      const nama = String(getCell(row, 'nama', 'namaKaryawan', 'nama karyawan') ?? '').trim().toLowerCase()
+      const nik = String(getCell(row, 'NIK', 'nik') ?? '').trim().toLowerCase()
+      const tglTerima = getExcelDate(getCell(row, 'tglTerima', 'Tgl Terima', 'tanggalTerima'))
+      const keterangan = String(getCell(row, 'keterangan', 'Keterangan', 'ket') ?? '').trim()
 
-      if (!noPR) return
+      if (!nama && !nik && !noPR) return
 
-      const matchedRecord = records.find((record) => record.noPR.trim().toUpperCase() === noPR)
+      const matchedRecord = records.find((record) => noPR
+        ? record.noPR.trim().toUpperCase() === noPR
+        : record.namaKaryawan.trim().toLowerCase() === nama && record.nik.trim().toLowerCase() === nik)
       if (!matchedRecord) return
 
       const nextTglTerima = tglTerima || matchedRecord.tglTerima || new Date().toISOString().split('T')[0]
@@ -298,7 +343,7 @@ export function TrackingPage({
     event.target.value = ''
 
     if (updatedCount === 0) {
-      alert('Tidak ada data penerimaan yang cocok dengan No. PR yang tersedia.')
+      alert('Tidak ada data penerimaan yang cocok berdasarkan Nama + NIK atau No. PR.')
       return
     }
 
@@ -322,16 +367,12 @@ export function TrackingPage({
             <input ref={uploadInputRef} type="file" accept=".xlsx,.xls,.csv" onChange={importPengajuan} className="hidden" />
             <button type="button" onClick={() => uploadInputRef.current?.click()} className="inline-flex items-center gap-1.5 rounded-xl border border-amber-300 bg-white px-3.5 py-2 text-xs font-semibold text-amber-900 shadow-sm transition-colors hover:bg-amber-50">
               <Upload className="h-3.5 w-3.5 text-amber-600" />
-              <span>Upload Pengajuan</span>
+              <span>Upload</span>
             </button>
             <input ref={receiptUploadInputRef} type="file" accept=".xlsx,.xls,.csv" onChange={importPenerimaan} className="hidden" />
             <button type="button" onClick={() => receiptUploadInputRef.current?.click()} className="inline-flex items-center gap-1.5 rounded-xl border border-emerald-300 bg-white px-3.5 py-2 text-xs font-semibold text-emerald-900 shadow-sm transition-colors hover:bg-emerald-50">
               <PackageCheck className="h-3.5 w-3.5 text-emerald-600" />
               <span>Update Penerimaan</span>
-            </button>
-            <button onClick={() => exportExcel(true)} className="inline-flex items-center gap-1.5 rounded-xl bg-[#143254] px-3.5 py-2 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-[#1d4470]">
-              <FileSpreadsheet className="h-3.5 w-3.5" />
-              <span>Unduh Hasil Filter</span>
             </button>
             <button onClick={() => exportExcel(false)} className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 shadow-sm transition-colors hover:bg-slate-50">
               <Download className="h-3.5 w-3.5" />
@@ -359,11 +400,11 @@ export function TrackingPage({
             </div>
             <div>
               <label className="mb-1.5 block text-[11px] font-semibold text-slate-700">NIK</label>
-              <input value={nik} onChange={(e) => setNik(e.target.value)} className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm" placeholder="JAI-xxxx" />
+              <input value={nik} onChange={(e) => setNik(e.target.value)} className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm" placeholder="No. NIK" />
             </div>
             <div>
               <label className="mb-1.5 block text-[11px] font-semibold text-slate-700">Nomor PR</label>
-              <input value={noPR} onChange={(e) => setNoPR(e.target.value)} className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm" placeholder="PR-2024-JAI-120" />
+              <input value={noPR} onChange={(e) => setNoPR(e.target.value)} className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm" placeholder="No. PR" />
             </div>
             <div>
               <label className="mb-1.5 block text-[11px] font-semibold text-slate-700">Departemen</label>
@@ -426,6 +467,10 @@ export function TrackingPage({
               <label className="mb-1.5 block text-[11px] font-semibold text-slate-700">Tanggal Terima</label>
               <input type="date" value={tglTerima} onChange={(e) => setTglTerima(e.target.value)} className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm" />
             </div>
+            <div>
+              <label className="mb-1.5 block text-[11px] font-semibold text-slate-700">Batch</label>
+              <input value={batch} onChange={(e) => setBatch(e.target.value)} className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm" placeholder="Batch penerimaan" />
+            </div>
             <div className="md:col-span-2 lg:col-span-3 xl:col-span-4">
               <label className="mb-1.5 block text-[11px] font-semibold text-slate-700">Keterangan</label>
               <textarea value={keterangan} onChange={(e) => setKeterangan(e.target.value)} rows={2} className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm" placeholder="Catatan tambahan..." />
@@ -452,6 +497,12 @@ export function TrackingPage({
               </button>
             )}
             <button type="button" onClick={() => setIsFilterOpen((value) => !value)} className={`inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-xs font-semibold ${hasActiveFilters ? 'border-blue-300 bg-blue-50 text-blue-800' : 'border-slate-200 bg-white text-slate-700'}`}><Filter className="h-3.5 w-3.5" /> Filter {hasActiveFilters ? '(aktif)' : ''}</button>
+            {hasActiveFilters && (
+              <button type="button" onClick={() => exportExcel(true)} className="inline-flex items-center gap-2 rounded-xl bg-[#143254] px-3 py-2 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-[#1d4470]">
+                <FileSpreadsheet className="h-3.5 w-3.5" />
+                <span>Unduh Hasil Filter</span>
+              </button>
+            )}
             {isFilterOpen && <div className="absolute right-0 top-11 z-30 grid w-[min(92vw,680px)] gap-3 rounded-2xl border border-slate-200 bg-white p-4 text-xs shadow-xl sm:grid-cols-2 lg:grid-cols-3">
               <label className="grid gap-1 font-semibold">Nama<input value={filterNama} onChange={(e) => setFilterNama(e.target.value)} className="rounded-lg border border-slate-200 px-2.5 py-2 font-normal" placeholder="Cari nama" /></label>
               <label className="grid gap-1 font-semibold">NIK<input value={filterNik} onChange={(e) => setFilterNik(e.target.value)} className="rounded-lg border border-slate-200 px-2.5 py-2 font-normal" placeholder="Cari NIK" /></label>
@@ -481,6 +532,7 @@ export function TrackingPage({
                 <th className="px-4 py-3 font-semibold">Tgl Input</th>
                 <th className="px-4 py-3 font-semibold">Tgl Terima</th>
                 <th className="px-4 py-3 font-semibold">Status</th>
+                <th className="px-4 py-3 font-semibold">Batch</th>
                 <th className="px-4 py-3 font-semibold">Keterangan</th>
                 <th className="px-4 py-3 font-semibold">Aksi</th>
               </tr>
@@ -508,6 +560,7 @@ export function TrackingPage({
                       {record.tglTerima ? 'Selesai' : 'Dipesan'}
                     </span>
                   </td>
+                  <td className="px-4 py-3 text-slate-600">{record.batch || '-'}</td>
                   <td className="px-4 py-3 text-slate-600">{record.keterangan || '-'}</td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
