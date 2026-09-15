@@ -11,52 +11,31 @@ export function useAuth(page: AppPage) {
 
   useEffect(() => {
     let active = true
-
-    const checkSession = async () => {
-      try {
-        const response = await fetch('/api/auth')
-        const data = response.ok ? await response.json() : null
-        const sessionUser = data?.user
-
+    fetch('/api/auth')
+      .then(async (response) => response.ok ? response.json() : null)
+      .then((data) => {
         if (!active) return
-        if (sessionUser) {
-          setUser({ username: sessionUser.username, fullName: sessionUser.name, role: 'admin', isLoggedIn: true })
-          if (page === 'login') router.replace('/landingpage')
-        } else if (page !== 'login') {
-          router.replace('/login')
-        }
-      } catch {
-        if (active && page !== 'login') router.replace('/login')
-      } finally {
-        if (active) setIsCheckingSession(false)
-      }
-    }
-
-    checkSession()
+        const sessionUser = data?.user
+        if (sessionUser) setUser({ username: sessionUser.username, fullName: sessionUser.name, role: 'admin', isLoggedIn: true })
+        if (sessionUser && page === 'login') router.replace('/landingpage')
+      })
+      .catch(() => undefined)
+      .finally(() => { if (active) setIsCheckingSession(false) })
     return () => { active = false }
   }, [page, router])
 
   const login = async (username: string, password: string) => {
-    const response = await fetch('/api/auth', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, password }),
-    })
+    const response = await fetch('/api/auth', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, password }) })
     const data = await response.json()
-
     if (!response.ok) throw new Error(data?.error || 'Username atau password salah.')
-
     setUser({ username: data.user.username, fullName: data.user.name, role: 'admin', isLoggedIn: true })
     router.push('/landingpage')
   }
 
   const logout = async () => {
-    try {
-      await fetch('/api/auth', { method: 'DELETE' })
-    } finally {
-      setUser(null)
-      router.replace('/login')
-    }
+    await fetch('/api/auth', { method: 'DELETE' }).catch(() => undefined)
+    setUser(null)
+    router.replace('/landingpage')
   }
 
   return { isCheckingSession, login, logout, user }

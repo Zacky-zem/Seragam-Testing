@@ -1,5 +1,13 @@
 import { NextResponse } from 'next/server'
+import { cookies } from 'next/headers'
 import { prisma } from '@/lib/prisma'
+
+const requireSession = async () => {
+  const sessionId = (await cookies()).get('seragam_session')?.value
+  if (!sessionId) return NextResponse.json({ error: 'Login diperlukan untuk mengubah data.' }, { status: 401 })
+  const user = await prisma.user.findUnique({ where: { id: sessionId }, select: { id: true } })
+  return user ? null : NextResponse.json({ error: 'Sesi login tidak valid.' }, { status: 401 })
+}
 import { dateOnlyToUtc } from '@/lib/date-utils'
 
 const toDate = (value: unknown) => {
@@ -14,6 +22,8 @@ export async function GET(request: Request) {
   return NextResponse.json(records)
 }
 export async function POST(request: Request) {
+  const sessionError = await requireSession()
+  if (sessionError) return sessionError
   let body: Record<string, unknown>
   try {
     body = await request.json()
@@ -79,6 +89,8 @@ export async function POST(request: Request) {
   }
 }
 export async function PATCH(request: Request) {
+  const sessionError = await requireSession()
+  if (sessionError) return sessionError
   const body = await request.json()
   const { id, ...payload } = body
   if (!id) return NextResponse.json({ error: 'ID data wajib diisi.' }, { status: 400 })
@@ -118,6 +130,8 @@ export async function PATCH(request: Request) {
   }
 }
 export async function DELETE(request: Request) {
+  const sessionError = await requireSession()
+  if (sessionError) return sessionError
   try {
     const { id } = await request.json()
     if (!id) return NextResponse.json({ error: 'ID data wajib diisi.' }, { status: 400 })

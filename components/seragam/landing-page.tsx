@@ -7,7 +7,7 @@ import type { UniformRecord } from '@/types/seragam'
 const SHIRT_CHART = 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-OPZFAIyIy2zr3MuMQzuc1rhDI1zaAy.png'
 const TROUSER_CHART = 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-xYvbCQ1rfHJNGmV266QFERx1fGjcFv.png'
 
-export function LandingPage({ records, onNavigateToTracking }: { records: UniformRecord[]; onNavigateToTracking: () => void }) {
+export function LandingPage({ records, onNavigateToTracking, onRequireAuth }: { records: UniformRecord[]; onNavigateToTracking: () => void; onRequireAuth: () => void }) {
   const pending = records.filter((record) => !record.tglTerima).length
   const received = records.filter((record) => Boolean(record.tglTerima)).length
   const totalStel = records.reduce((total, record) => total + (record.jumlahStel || 1), 0)
@@ -47,9 +47,9 @@ export function LandingPage({ records, onNavigateToTracking }: { records: Unifor
         </div>
       </section>
 
-      <section className="flex flex-col gap-4 rounded-2xl border border-border bg-card p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
+      <section id="about" className="grid gap-5 rounded-3xl border border-sky-100 bg-white p-6 shadow-sm sm:grid-cols-3 sm:p-8"><div className="sm:col-span-2"><p className="text-xs font-bold uppercase tracking-[.2em] text-cyan-700">About Uniform Hub</p><h2 className="mt-2 text-2xl font-bold text-[#082343]">Satu ruang kerja untuk seragam yang lebih tertata.</h2><p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">Dashboard internal PT JAI untuk memantau pengajuan, ukuran, dan penerimaan seragam. Semua orang dapat melihat ringkasan; perubahan data tetap terlindungi.</p></div><div className="grid grid-cols-3 gap-3 text-center"><div className="rounded-2xl bg-sky-50 p-3"><strong className="block text-2xl text-[#082343]">{records.length}</strong><span className="text-[11px] text-slate-500">Pengajuan</span></div><div className="rounded-2xl bg-amber-50 p-3"><strong className="block text-2xl text-[#082343]">{pending}</strong><span className="text-[11px] text-slate-500">Menunggu</span></div><div className="rounded-2xl bg-emerald-50 p-3"><strong className="block text-2xl text-[#082343]">{received}</strong><span className="text-[11px] text-slate-500">Diterima</span></div></div></section>\n\n      <section className="flex flex-col gap-4 rounded-2xl border border-border bg-card p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
         <div><h2 className="font-bold text-card-foreground">Template Excel</h2><p className="mt-1 text-sm text-muted-foreground">Gunakan format ini untuk input data secara massal.</p></div>
-        <div className="flex flex-wrap gap-2"><button onClick={() => downloadTemplate('pengajuan')} className="inline-flex items-center gap-2 rounded-xl border border-border bg-background px-4 py-2.5 text-xs font-semibold text-foreground hover:bg-muted"><FileDown data-icon="inline-start" /> Template Pengajuan</button><button onClick={() => downloadTemplate('penerimaan')} className="inline-flex items-center gap-2 rounded-xl border border-border bg-background px-4 py-2.5 text-xs font-semibold text-foreground hover:bg-muted"><FileSpreadsheet data-icon="inline-start" /> Template Penerimaan</button></div>
+        <div className="flex flex-wrap gap-2"><button onClick={onRequireAuth} className="inline-flex items-center gap-2 rounded-xl border border-border bg-background px-4 py-2.5 text-xs font-semibold text-foreground hover:bg-muted"><FileDown data-icon="inline-start" /> Template Pengajuan</button><button onClick={onRequireAuth} className="inline-flex items-center gap-2 rounded-xl border border-border bg-background px-4 py-2.5 text-xs font-semibold text-foreground hover:bg-muted"><FileSpreadsheet data-icon="inline-start" /> Template Penerimaan</button></div>
       </section>
     </div>
   )
