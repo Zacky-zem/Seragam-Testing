@@ -1,10 +1,8 @@
 'use client'
 
-import Image from 'next/image'
-import React from 'react'
 import * as XLSX from 'xlsx'
 import { ArrowRight, CheckCircle2, FileDown, FileSpreadsheet, LayoutDashboard, Ruler, Shirt, Sparkles, Truck } from 'lucide-react'
-import type { UniformRecord } from './types'
+import type { UniformRecord } from '@/types/seragam'
 
 const SHIRT_CHART = 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-OPZFAIyIy2zr3MuMQzuc1rhDI1zaAy.png'
 const TROUSER_CHART = 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-xYvbCQ1rfHJNGmV266QFERx1fGjcFv.png'
@@ -27,33 +25,22 @@ export function LandingPage({ records, onNavigateToTracking }: { records: Unifor
   return (
     <div className="mx-auto flex max-w-7xl flex-col gap-8 px-4 py-8 sm:px-6 lg:px-8">
       <section className="animate-fade-up overflow-hidden rounded-[2rem] bg-primary text-primary-foreground shadow-xl">
-        <div className="grid gap-8 p-6 sm:p-10 lg:grid-cols-[1.1fr_.9fr] lg:items-center">
-          <div className="flex flex-col gap-6 py-5 sm:gap-7 sm:py-8 lg:py-10">
-            <div className="relative -top-4 flex flex-wrap items-center gap-2 text-sm font-semibold uppercase tracking-[0.12em] text-primary-foreground/90 sm:-top-6 lg:-top-8"><Sparkles aria-hidden="true" /> <span>PT. JATIM AUTOCOMP INDONESIA</span></div>
+        <div className="p-6 sm:p-10 lg:p-14">
+          <div className="flex w-full flex-col gap-6 py-5 sm:gap-7 sm:py-8 lg:py-10">
+            <div className="flex flex-wrap items-center gap-2 text-sm font-semibold uppercase tracking-[0.12em] text-primary-foreground/90"><Sparkles aria-hidden="true" /> <span>PT. JATIM AUTOCOMP INDONESIA</span></div>
             <div className="animate-fade-up flex flex-col gap-6 sm:gap-7">
               <div className="flex flex-col gap-4">
-                <h1 className="max-w-2xl text-balance text-3xl font-bold leading-[1.08] tracking-tight text-white sm:text-5xl">Data seragam lebih rapi, distribusi lebih terkendali.</h1>
-                <p className="max-w-xl text-pretty text-base font-normal leading-7 text-slate-200 sm:text-lg">Kelola seluruh proses pengajuan seragam karyawan, dari ukuran hingga penerimaan, secara efisien dalam satu dasbor terpadu.</p>
+                <h1 className="max-w-6xl text-balance text-3xl font-bold leading-[1.08] tracking-tight text-white sm:text-5xl">Data seragam lebih rapi, distribusi lebih terkendali.</h1>
+                <p className="max-w-5xl text-pretty text-base font-normal leading-7 text-slate-200 sm:text-lg">Kelola seluruh proses pengajuan seragam karyawan, dari ukuran hingga penerimaan, secara efisien dalam satu dasbor terpadu.</p>
               </div>
               <button onClick={onNavigateToTracking} className="inline-flex w-fit items-center gap-2 rounded-full bg-white px-6 py-3.5 text-sm font-bold text-primary shadow-lg shadow-slate-950/15 transition-all hover:-translate-y-1 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-primary"><span>Kelola Data Seragam</span><ArrowRight aria-hidden="true" /></button>
             </div>
           </div>
-          <div className="animate-fade-up animate-delay-2 relative flex min-h-72 items-center justify-center overflow-hidden p-2 sm:min-h-80 lg:min-h-[22rem]">
-            <div className="pointer-events-none absolute inset-0 opacity-25" aria-hidden="true">
-              <div className="absolute right-0 top-8 h-px w-3/4 rotate-[-12deg] bg-cyan-200/70" />
-              <div className="absolute right-8 top-24 h-px w-2/3 rotate-[18deg] bg-cyan-200/50" />
-              <div className="absolute bottom-24 right-0 h-px w-3/4 rotate-[-8deg] bg-cyan-200/40" />
-              <div className="absolute right-1/4 top-1/4 h-40 w-40 rounded-full border border-cyan-200/30" />
-              <div className="absolute bottom-4 right-10 h-52 w-52 rounded-full border border-cyan-200/20" />
-            </div>
-            <div className="pointer-events-none absolute inset-y-0 right-[-18%] w-[125%] bg-gradient-to-l from-transparent via-primary/15 to-primary/90" aria-hidden="true" />
-              <Image src="/yazaki-logo.jpeg" alt="Logo Yazaki" width={860} height={344} className="h-auto w-[min(135%,48rem)] object-contain brightness-0 invert opacity-95 drop-shadow-[0_18px_28px_rgba(0,0,0,0.3)] sm:w-[min(125%,52rem)]" />
-            </div>
         </div>
       </section>
 
       <section className="flex flex-col gap-4">
-        <div><p className="text-sm font-semibold text-accent-foreground">Panduan ukuran</p><h2 className="text-2xl font-bold tracking-tight text-foreground">Pilih ukuran dengan lebih yakin</h2><p className="mt-1 max-w-2xl text-sm leading-6 text-muted-foreground">Gunakan chart berikut sebagai referensi sebelum mengisi data ukuran baju dan celana.</p></div>
+        <div><h2 className="text-2xl font-bold tracking-tight text-foreground">Panduan ukuran seragam</h2><p className="mt-1 max-w-2xl text-sm leading-6 text-muted-foreground">Gunakan chart berikut sebagai referensi sebelum mengisi data ukuran baju dan celana.</p></div>
         <div className="grid gap-5 lg:grid-cols-2">
           <ChartCard title="Ukuran Kemeja Kerja" description="Ukuran baju dalam centimeter" src={SHIRT_CHART} />
           <ChartCard title="Ukuran Celana Kerja" description="Ukuran celana dalam centimeter" src={TROUSER_CHART} />

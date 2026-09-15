@@ -1,5 +1,5 @@
-import SeragamDashboard from '@/components/seragam/seragam-dashboard'
+import { redirect } from 'next/navigation'
 
 export default function Page() {
-  return <SeragamDashboard />
+  redirect('/login')
 }

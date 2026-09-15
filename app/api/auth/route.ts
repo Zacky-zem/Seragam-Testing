@@ -30,4 +30,13 @@ export async function POST(request: Request) {
   const jar = await cookies(); jar.set('seragam_session', user.id, { httpOnly: true, sameSite: 'lax', secure: process.env.NODE_ENV === 'production', maxAge: 60 * 60 * 8, path: '/' })
   return NextResponse.json({ user: { name: user.name, username: user.username } })
 }
+export async function GET() {
+  const sessionId = (await cookies()).get('seragam_session')?.value
+  if (!sessionId) return NextResponse.json({ user: null }, { status: 401 })
+
+  const user = await prisma.user.findUnique({ where: { id: sessionId }, select: { name: true, username: true } })
+  if (!user) return NextResponse.json({ user: null }, { status: 401 })
+  return NextResponse.json({ user })
+}
+
 export async function DELETE() { const jar = await cookies(); jar.delete('seragam_session'); return NextResponse.json({ ok: true }) }

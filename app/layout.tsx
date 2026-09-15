@@ -3,7 +3,7 @@ import type { Metadata, Viewport } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'JAI Uniform | Pengelolaan Seragam',
+  title: 'Seragam JAI',
   description: 'Dashboard pengajuan dan distribusi seragam PT JAI.',
   generator: 'Next.js',
   icons: {
@@ -21,13 +21,13 @@ export const metadata: Metadata = {
         type: 'image/svg+xml',
       },
     ],
-    apple: '/apple-icon.png',
+    apple: '/apple-icon.jpeg',
   },
 }
 
 export const viewport: Viewport = {
   colorScheme: 'light',
-  themeColor: '#f7fafe',
+  themeColor: '#0b3154',
 }
 
 export default function RootLayout({

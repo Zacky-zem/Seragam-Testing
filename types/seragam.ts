@@ -1,3 +1,5 @@
+export type AppPage = 'login' | 'landing' | 'tracking'
+
 export type UserSession = {
   username: string
   fullName: string

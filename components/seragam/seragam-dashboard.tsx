@@ -1,238 +1,66 @@
-﻿'use client'
+'use client'
 
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { AlertCircle, CheckCircle2, Info, X } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { useAuth } from '@/hooks/use-auth'
+import { useUniformRecords } from '@/hooks/use-uniform-records'
+import type { AppPage, UniformRecord } from '@/types/seragam'
 import { LandingPage } from './landing-page'
 import { LoginPage } from './login-page'
 import { Navbar } from './navbar'
 import { TrackingPage } from './tracking-page'
-import type { UniformRecord, UserSession } from './types'
 
-const toLocalDateInputValue = (value: string | Date) => {
-  const date = new Date(value)
-  if (Number.isNaN(date.getTime())) return ''
-  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
-}
+type Toast = { message: string; type: 'success' | 'info' | 'error' }
 
-const normalizeRecord = (record: any): UniformRecord => ({
-  id: record.id ?? record.noPR,
-  namaKaryawan: record.namaKaryawan ?? 'Unknown',
-  nik: record.nip ?? '',
-  departemen: record.departemen ?? 'Unknown',
-  section: typeof record.section === 'string' ? record.section : '',
-  ukuranBaju: record.ukuranBaju ?? record.ukuran ?? 'M',
-  ukuranCelana: record.ukuranCelana ?? '',
-  jumlahStel: Number(record.jumlah ?? 1),
-  noPR: record.noPR ?? '',
-  tglInput: record.tanggalPengajuan ? toLocalDateInputValue(record.tanggalPengajuan) : '',
-  tglTerima: record.tanggalPenerimaan ? toLocalDateInputValue(record.tanggalPenerimaan) : null,
-  batch: record.batch ?? '',
-  keterangan: record.keterangan ?? undefined,
-})
+const SessionLoading = () => <div className="grid min-h-screen place-items-center bg-background text-sm text-muted-foreground">Memuat Halaman...</div>
 
-const toApiPayload = (record: UniformRecord) => ({
-  noPR: record.noPR || null,
-  namaKaryawan: record.namaKaryawan,
-  nip: record.nik,
-  departemen: record.departemen,
-  section: record.section,
-  ukuranBaju: record.ukuranBaju,
-  ukuranCelana: record.ukuranCelana,
-  jumlah: record.jumlahStel,
-  status: record.tglTerima ? 'Diterima' : 'Diajukan',
-  tanggalPengajuan: record.tglInput || new Date().toISOString().split('T')[0],
-  tanggalPenerimaan: record.tglTerima || null,
-  batch: record.batch || null,
-  keterangan: record.keterangan || null,
-})
-
-export default function SeragamDashboard() {
-  const [user, setUser] = useState<UserSession | null>(null)
-  const [records, setRecords] = useState<UniformRecord[]>([])
-  const [currentView, setCurrentView] = useState<'landing' | 'tracking'>('landing')
-  const [toast, setToast] = useState<{ message: string; type: 'success' | 'info' | 'error' } | null>(null)
-
-  const showToast = (message: string, type: 'success' | 'info' | 'error' = 'success') => {
+export default function SeragamDashboard({ page }: { page: AppPage }) {
+  const router = useRouter()
+  const [toast, setToast] = useState<Toast | null>(null)
+  const { isCheckingSession, login, logout, user } = useAuth(page)
+  const showToast = (message: string, type: Toast['type'] = 'success') => {
     setToast({ message, type })
     window.setTimeout(() => setToast(null), 3000)
   }
+  const { addRecord, deleteRecord, records, updateRecord } = useUniformRecords(Boolean(user?.isLoggedIn), (message) => showToast(message, 'error'))
 
-  const fetchRecords = async () => {
-    try {
-      const response = await fetch('/api/records')
-      if (!response.ok) {
-        throw new Error('Gagal mengambil data dari server')
-      }
-      const data = await response.json()
-      setRecords(Array.isArray(data) ? data.map(normalizeRecord) : [])
-    } catch (error) {
-      console.error(error)
-      setRecords([])
-      showToast('Gagal memuat data seragam dari database.', 'error')
-    }
+  const handleAddRecord = async (record: UniformRecord) => {
+    if (await addRecord(record)) showToast(`Pengajuan seragam untuk ${record.namaKaryawan} (${record.noPR}) berhasil disimpan.`)
   }
-
-  useEffect(() => {
-    if (user?.isLoggedIn) {
-      fetchRecords()
-    }
-  }, [user?.isLoggedIn])
-
-  const handleLogin = async (username: string, password: string) => {
-    try {
-      const response = await fetch('/api/auth', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password }),
-      })
-
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data?.error || 'Username atau password salah.')
-      }
-
-      setUser({
-        username: data.user.username,
-        fullName: data.user.name,
-        role: 'admin',
-        isLoggedIn: true,
-      })
-      setCurrentView('landing')
-      showToast('Selamat datang kembali, Administrator GA!', 'success')
-    } catch (error) {
-      showToast(error instanceof Error ? error.message : 'Login gagal.', 'error')
-    }
+  const handleUpdateRecord = async (record: UniformRecord) => {
+    if (await updateRecord(record)) showToast(`Data seragam ${record.namaKaryawan} (${record.noPR}) berhasil diperbarui.`)
   }
-
-  const handleLogout = async () => {
-    try {
-      await fetch('/api/auth', { method: 'DELETE' })
-    } catch (error) {
-      console.error(error)
-    } finally {
-      setUser(null)
-      setCurrentView('landing')
-      showToast('Anda telah berhasil logout dari sistem.', 'info')
-    }
-  }
-
-  const handleAddRecord = async (newRecord: UniformRecord) => {
-    try {
-      const response = await fetch('/api/records', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(toApiPayload(newRecord)),
-      })
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}))
-        throw new Error(errorData.error || 'Gagal menyimpan data')
-      }
-
-      const saved = await response.json()
-      setRecords((prev) => [normalizeRecord(saved), ...prev])
-      showToast(`Pengajuan seragam untuk ${newRecord.namaKaryawan} (${newRecord.noPR}) berhasil disimpan.`, 'success')
-    } catch (error) {
-      showToast(error instanceof Error ? error.message : 'Gagal menyimpan data.', 'error')
-    }
-  }
-
   const handleDeleteRecord = async (id: string) => {
-    try {
-      const response = await fetch('/api/records', {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id }),
-      })
-
-      if (!response.ok) {
-        throw new Error('Gagal menghapus data')
-      }
-
-      setRecords((prev) => prev.filter((r) => r.id !== id))
-      showToast('Data seragam berhasil dihapus.', 'info')
-    } catch (error) {
-      showToast(error instanceof Error ? error.message : 'Gagal menghapus data.', 'error')
-    }
+    if (await deleteRecord(id)) showToast('Data seragam berhasil dihapus.', 'error')
   }
 
-  const handleUpdateRecord = async (updatedRecord: UniformRecord) => {
-    try {
-      const response = await fetch('/api/records', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...toApiPayload(updatedRecord),
-          id: updatedRecord.id,
-        }),
-      })
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}))
-        throw new Error(errorData.error || 'Gagal memperbarui data')
-      }
-
-      const saved = await response.json()
-      setRecords((prev) => prev.map((r) => (r.id === updatedRecord.id ? normalizeRecord(saved) : r)))
-      showToast(`Data seragam ${updatedRecord.namaKaryawan} (${updatedRecord.noPR}) berhasil diperbarui.`, 'success')
-    } catch (error) {
-      showToast(error instanceof Error ? error.message : 'Gagal memperbarui data.', 'error')
-    }
-  }
-
-  if (!user || !user.isLoggedIn) {
-    return <LoginPage onLogin={handleLogin} />
-  }
+  if (page === 'login') return isCheckingSession ? <SessionLoading /> : <LoginPage onLogin={login} />
+  if (isCheckingSession || !user?.isLoggedIn) return <SessionLoading />
 
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col selection:bg-primary selection:text-primary-foreground">
-      <Navbar currentView={currentView} onNavigate={setCurrentView} user={user} onLogout={handleLogout} />
-
+    <div className="flex min-h-screen flex-col bg-background text-foreground selection:bg-primary selection:text-primary-foreground">
+      <Navbar currentView={page} user={user} onLogout={logout} />
       <main className="flex-1 pb-16">
-        {currentView === 'landing' ? (
-          <LandingPage records={records} onNavigateToTracking={() => setCurrentView('tracking')} />
+        {page === 'landing' ? (
+          <LandingPage records={records} onNavigateToTracking={() => router.push('/seragam')} />
         ) : (
-          <TrackingPage
-            records={records}
-            onAddRecord={handleAddRecord}
-            onUpdateRecord={handleUpdateRecord}
-            onDeleteRecord={handleDeleteRecord}
-            onNavigateHome={() => setCurrentView('landing')}
-          />
+          <TrackingPage records={records} onAddRecord={handleAddRecord} onUpdateRecord={handleUpdateRecord} onDeleteRecord={handleDeleteRecord} onNavigateHome={() => router.push('/landingpage')} />
         )}
       </main>
-
       <footer className="border-t border-border bg-card py-6 text-center text-xs text-muted-foreground no-print">
-        <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
-          <div>
-            © {new Date().getFullYear()} <strong>PT Jatim Autocomp Indonesia </strong>
-          </div>
+        <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-2 px-4 sm:flex-row">
+          <div>© {new Date().getFullYear()} <strong>PT Jatim Autocomp Indonesia</strong></div>
           <div className="text-[11px] text-slate-400">Sistem Distribusi Seragam</div>
         </div>
       </footer>
-
-      {toast && (
-        <div className="fixed bottom-5 right-5 z-50 animate-in fade-in slide-in-from-bottom-5 duration-200">
-          <div
-            className={`flex items-center gap-3 rounded-xl border p-4 text-xs font-semibold shadow-lg ${
-              toast.type === 'success'
-                ? 'border-emerald-700 bg-emerald-900 text-emerald-100'
-                : toast.type === 'error'
-                  ? 'border-red-700 bg-red-900 text-red-100'
-                  : 'border-blue-800 bg-[#143254] text-blue-100'
-            }`}
-          >
-            {toast.type === 'success' && <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-400" />}
-            {toast.type === 'error' && <AlertCircle className="h-4 w-4 shrink-0 text-red-400" />}
-            {toast.type === 'info' && <Info className="h-4 w-4 shrink-0 text-blue-400" />}
-            <span>{toast.message}</span>
-            <button onClick={() => setToast(null)} className="ml-2 text-white/60 transition-colors hover:text-white">
-              <X className="h-3.5 w-3.5" />
-            </button>
-          </div>
-        </div>
-      )}
+      {toast && <ToastMessage toast={toast} onClose={() => setToast(null)} />}
     </div>
   )
+}
+
+function ToastMessage({ toast, onClose }: { toast: Toast; onClose: () => void }) {
+  const Icon = toast.type === 'success' ? CheckCircle2 : toast.type === 'error' ? AlertCircle : Info
+  const color = toast.type === 'success' ? 'border-emerald-700 bg-emerald-900 text-emerald-100' : toast.type === 'error' ? 'border-red-700 bg-red-900 text-red-100' : 'border-blue-800 bg-[#143254] text-blue-100'
+  return <div className="fixed bottom-5 right-5 z-50 animate-in fade-in slide-in-from-bottom-5 duration-200"><div className={`flex items-center gap-3 rounded-xl border p-4 text-xs font-semibold shadow-lg ${color}`}><Icon className="size-4 shrink-0" /><span>{toast.message}</span><button onClick={onClose} className="ml-2 text-white/60 transition-colors hover:text-white" aria-label="Tutup notifikasi"><X className="size-3.5" /></button></div></div>
 }

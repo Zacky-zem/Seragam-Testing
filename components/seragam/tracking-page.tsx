@@ -18,8 +18,8 @@ import {
   ChevronDown,
 } from 'lucide-react'
 import * as XLSX from 'xlsx'
-import { departments, sectionsMap, trouserSizes, uniformSizes } from './data'
-import type { UniformRecord } from './types'
+import { departments, sectionsMap, trouserSizes, uniformSizes } from '@/constants/uniform'
+import type { UniformRecord } from '@/types/seragam'
 import { EditRecordModal } from './edit-record-modal'
 import { parseFlexibleDate } from '@/lib/date-utils'
 
@@ -79,7 +79,9 @@ export function TrackingPage({
   const [sectionOption, setSectionOption] = useState<string>('')
   const [customSection, setCustomSection] = useState('')
   const [ukuranBaju, setUkuranBaju] = useState('')
+  const [customUkuranBaju, setCustomUkuranBaju] = useState('')
   const [ukuranCelana, setUkuranCelana] = useState('')
+  const [customUkuranCelana, setCustomUkuranCelana] = useState('')
   const [jumlahStel, setJumlahStel] = useState<number | ''>('')
   const [noPR, setNoPR] = useState('')
   const [batch, setBatch] = useState('')
@@ -90,6 +92,7 @@ export function TrackingPage({
   const [selectedDept, setSelectedDept] = useState('ALL')
   const [selectedStatus, setSelectedStatus] = useState<'all' | 'dipesan' | 'diterima'>('all')
   const [selectedPR, setSelectedPR] = useState('ALL')
+  const [selectedBatch, setSelectedBatch] = useState('ALL')
   const [startDateInput, setStartDateInput] = useState('')
   const [endDateInput, setEndDateInput] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
@@ -106,6 +109,7 @@ export function TrackingPage({
   const [filterNama, setFilterNama] = useState('')
 
   const uniquePRList = useMemo(() => Array.from(new Set(records.map((r) => r.noPR))).filter(Boolean).sort(), [records])
+  const uniqueBatchList = useMemo(() => Array.from(new Set(records.map((r) => r.batch).filter(Boolean))).sort(), [records])
   const uniqueDeptFilterList = useMemo(() => Array.from(new Set([...departments, ...records.map((r) => r.departemen)])).filter(Boolean), [records])
 
   const filteredRecords = useMemo(() => {
@@ -123,6 +127,7 @@ export function TrackingPage({
       if (filterNik.trim() && !item.nik.toLowerCase().includes(filterNik.toLowerCase().trim())) return false
       if (selectedDept !== 'ALL' && item.departemen !== selectedDept) return false
       if (selectedPR !== 'ALL' && item.noPR !== selectedPR) return false
+      if (selectedBatch !== 'ALL' && item.batch !== selectedBatch) return false
       if (filterSection !== 'ALL' && item.section !== filterSection) return false
       if (filterUkuran !== 'ALL' && item.ukuranBaju !== filterUkuran) return false
       if (selectedStatus === 'dipesan' && item.tglTerima) return false
@@ -131,7 +136,7 @@ export function TrackingPage({
       if (endDateInput && item.tglInput > endDateInput) return false
       return true
     })
-  }, [records, searchQuery, filterNama, filterNik, selectedDept, selectedStatus, selectedPR, filterSection, filterUkuran, startDateInput, endDateInput])
+  }, [records, searchQuery, filterNama, filterNik, selectedDept, selectedStatus, selectedPR, selectedBatch, filterSection, filterUkuran, startDateInput, endDateInput])
 
   const totalPages = Math.max(1, Math.ceil(filteredRecords.length / itemsPerPage))
   const paginatedRecords = useMemo(() => {
@@ -141,17 +146,27 @@ export function TrackingPage({
 
   const handleDeptChange = (dept: string) => {
     setDeptOption(dept)
-    if (dept === '') {
+    setSectionOption('')
+    setCustomSection('')
+  }
+
+  const handleDepartmentInput = (value: string) => {
+    if (value === 'Lainnya') {
+      setDeptOption('__OTHER__')
+      setCustomDept('')
       setSectionOption('')
       return
     }
-    if (dept === '__MANUAL__') {
-      setSectionOption('__MANUAL__')
+    if (departments.includes(value)) {
+      handleDeptChange(value)
       return
     }
-    const secs = sectionsMap[dept] || []
-    setSectionOption(secs.length ? secs[0] : '__MANUAL__')
+    setDeptOption('__OTHER__')
+    setCustomDept(value)
+    setSectionOption('')
   }
+
+  const availableSectionOptions = deptOption && deptOption !== '__OTHER__' ? (sectionsMap[deptOption] || []) : []
 
   const handleResetForm = () => {
     setNamaKaryawan('')
@@ -161,7 +176,9 @@ export function TrackingPage({
     setSectionOption('')
     setCustomSection('')
     setUkuranBaju('')
+    setCustomUkuranBaju('')
     setUkuranCelana('')
+    setCustomUkuranCelana('')
     setJumlahStel('')
     setNoPR('')
     setBatch('')
@@ -190,11 +207,13 @@ export function TrackingPage({
     const normalizedTglInput = parsedTglInput ?? new Date().toISOString().split('T')[0]
     const normalizedTglTerima = parsedTglTerima
 
-    const resolvedDept = deptOption === '__MANUAL__' ? customDept.trim() : deptOption
-    const resolvedSection = sectionOption === '__MANUAL__' ? customSection.trim() : sectionOption
+    const resolvedDept = deptOption === '__OTHER__' ? customDept.trim() : deptOption
+    const resolvedSection = sectionOption === '__OTHER__' ? customSection.trim() : sectionOption
+    const resolvedUkuranBaju = ukuranBaju === '__OTHER__' ? customUkuranBaju.trim() : (ukuranBaju || uniformSizes[4])
+    const resolvedUkuranCelana = ukuranCelana === '__OTHER__' ? customUkuranCelana.trim() : (ukuranCelana || trouserSizes[3])
 
-    if (!resolvedDept || !resolvedSection) {
-      alert('Departemen dan section wajib diisi.')
+    if (!resolvedDept || !resolvedSection || (ukuranBaju === '__OTHER__' && !resolvedUkuranBaju) || (ukuranCelana === '__OTHER__' && !resolvedUkuranCelana)) {
+      alert('Departemen, section, dan ukuran Lainnya wajib diisi.')
       return
     }
 
@@ -204,8 +223,8 @@ export function TrackingPage({
       nik: nik.trim().toUpperCase(),
       departemen: resolvedDept,
       section: resolvedSection,
-      ukuranBaju: ukuranBaju || uniformSizes[4],
-      ukuranCelana: ukuranCelana || trouserSizes[3],
+      ukuranBaju: resolvedUkuranBaju,
+      ukuranCelana: resolvedUkuranCelana,
       jumlahStel: Number(jumlahStel) || 1,
       noPR: noPR.trim().toUpperCase(),
       tglInput: normalizedTglInput,
@@ -255,7 +274,7 @@ export function TrackingPage({
 
   const uniqueSectionList = useMemo(() => Array.from(new Set(records.map((r) => r.section).filter(Boolean))).sort(), [records])
   const uniqueUkuranList = useMemo(() => Array.from(new Set(records.map((r) => r.ukuranBaju).filter(Boolean))).sort(), [records])
-  const hasActiveFilters = searchQuery || filterNama || filterNik || selectedDept !== 'ALL' || selectedStatus !== 'all' || selectedPR !== 'ALL' || filterSection !== 'ALL' || filterUkuran !== 'ALL' || startDateInput || endDateInput
+  const hasActiveFilters = searchQuery || filterNama || filterNik || selectedDept !== 'ALL' || selectedStatus !== 'all' || selectedPR !== 'ALL' || selectedBatch !== 'ALL' || filterSection !== 'ALL' || filterUkuran !== 'ALL' || startDateInput || endDateInput
 
   const resetFilters = () => {
     setSearchQuery('')
@@ -264,6 +283,7 @@ export function TrackingPage({
     setSelectedDept('ALL')
     setSelectedStatus('all')
     setSelectedPR('ALL')
+    setSelectedBatch('ALL')
     setFilterSection('ALL')
     setFilterUkuran('ALL')
     setStartDateInput('')
@@ -353,8 +373,8 @@ export function TrackingPage({
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
       <div>
-        <button onClick={onNavigateHome} id="btn-back-to-home" className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-900 transition-colors mb-2 cursor-pointer">
-          <span className="text-sm">←</span>
+        <button onClick={onNavigateHome} id="btn-back-to-home" className="mb-3 inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 shadow-sm transition-colors hover:border-blue-300 hover:bg-blue-50 hover:text-blue-800 cursor-pointer">
+          <ChevronLeft className="h-3.5 w-3.5" />
           <span>Kembali ke menu utama</span>
         </button>
 
@@ -408,52 +428,23 @@ export function TrackingPage({
             </div>
             <div>
               <label className="mb-1.5 block text-[11px] font-semibold text-slate-700">Departemen</label>
-              <select value={deptOption} onChange={(e) => handleDeptChange(e.target.value)} className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm">
-                <option value="">Pilih departemen</option>
-                {departments.map((dept) => (
-                  <option key={dept} value={dept}>{dept}</option>
-                ))}
-                <option value="__MANUAL__">Manual input...</option>
-              </select>
+              <input list="department-options" value={deptOption === '__OTHER__' ? customDept : deptOption} onChange={(e) => handleDepartmentInput(e.target.value)} className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm" placeholder="Pilih atau ketik departemen" />
+              <datalist id="department-options">{departments.map((dept) => <option key={dept} value={dept} />)}<option value="Lainnya" /></datalist>
             </div>
-            {deptOption === '__MANUAL__' && (
-              <div>
-                <label className="mb-1.5 block text-[11px] font-semibold text-slate-700">Custom Departemen</label>
-                <input value={customDept} onChange={(e) => setCustomDept(e.target.value)} className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm" placeholder="Masukkan departemen" />
-              </div>
-            )}
             <div>
               <label className="mb-1.5 block text-[11px] font-semibold text-slate-700">Section</label>
-              <select value={sectionOption} onChange={(e) => setSectionOption(e.target.value)} className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm">
-                {!deptOption && <option value="">Pilih section</option>}
-                {deptOption === '__MANUAL__' && <option value="__MANUAL__">Manual input...</option>}
-                {deptOption && deptOption !== '__MANUAL__' && ((sectionsMap[deptOption] || [])).map((section) => (
-                  <option key={section} value={section}>{section}</option>
-                ))}
-                {deptOption && deptOption !== '__MANUAL__' && <option value="__MANUAL__">Manual input...</option>}
-              </select>
+              <input list="section-options" value={sectionOption === '__OTHER__' ? customSection : sectionOption} onChange={(e) => { const value = e.target.value; if (value === 'Lainnya') { setSectionOption('__OTHER__'); setCustomSection('') } else if (availableSectionOptions.includes(value)) { setSectionOption(value); setCustomSection('') } else { setSectionOption('__OTHER__'); setCustomSection(value) } }} className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm" placeholder="Pilih atau ketik section" />
+              <datalist id="section-options">{availableSectionOptions.map((section) => <option key={section} value={section} />)}<option value="Lainnya" /></datalist>
             </div>
-            {sectionOption === '__MANUAL__' && (
-              <div>
-                <label className="mb-1.5 block text-[11px] font-semibold text-slate-700">Custom Section</label>
-                <input value={customSection} onChange={(e) => setCustomSection(e.target.value)} className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm" placeholder="Masukkan section" />
-              </div>
-            )}
             <div>
               <label className="mb-1.5 block text-[11px] font-semibold text-slate-700">Ukuran Baju</label>
-              <select value={ukuranBaju} onChange={(e) => setUkuranBaju(e.target.value)} className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm">
-                <option value="">Pilih ukuran baju</option>
-                {uniformSizes.map((size) => (
-                  <option key={size} value={size}>{size}</option>
-                ))}
-              </select>
+              <input list="shirt-size-options" value={ukuranBaju === '__OTHER__' ? customUkuranBaju : ukuranBaju} onChange={(e) => { const value = e.target.value; if (value === 'Lainnya') { setUkuranBaju('__OTHER__'); setCustomUkuranBaju('') } else if (uniformSizes.filter((size) => size !== 'Custom Size').includes(value)) { setUkuranBaju(value); setCustomUkuranBaju('') } else { setUkuranBaju('__OTHER__'); setCustomUkuranBaju(value) } }} className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm" placeholder="Pilih atau ketik ukuran baju" />
+              <datalist id="shirt-size-options">{uniformSizes.filter((size) => size !== 'Custom Size').map((size) => <option key={size} value={size} />)}<option value="Lainnya" /></datalist>
             </div>
             <div>
               <label className="mb-1.5 block text-[11px] font-semibold text-slate-700">Ukuran Celana</label>
-              <select value={ukuranCelana} onChange={(e) => setUkuranCelana(e.target.value)} className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm">
-                <option value="">Pilih ukuran celana</option>
-                {trouserSizes.map((size) => <option key={size} value={size}>{size}</option>)}
-              </select>
+              <input list="trouser-size-options" value={ukuranCelana === '__OTHER__' ? customUkuranCelana : ukuranCelana} onChange={(e) => { const value = e.target.value; if (value === 'Lainnya') { setUkuranCelana('__OTHER__'); setCustomUkuranCelana('') } else if (trouserSizes.filter((size) => size !== 'Custom Size').includes(value)) { setUkuranCelana(value); setCustomUkuranCelana('') } else { setUkuranCelana('__OTHER__'); setCustomUkuranCelana(value) } }} className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm" placeholder="Pilih atau ketik ukuran celana" />
+              <datalist id="trouser-size-options">{trouserSizes.filter((size) => size !== 'Custom Size').map((size) => <option key={size} value={size} />)}<option value="Lainnya" /></datalist>
             </div>
             <div>
               <label className="mb-1.5 block text-[11px] font-semibold text-slate-700">Jumlah Stel</label>
@@ -506,7 +497,7 @@ export function TrackingPage({
             {isFilterOpen && <div className="absolute right-0 top-11 z-30 grid w-[min(92vw,680px)] gap-3 rounded-2xl border border-slate-200 bg-white p-4 text-xs shadow-xl sm:grid-cols-2 lg:grid-cols-3">
               <label className="grid gap-1 font-semibold">Nama<input value={filterNama} onChange={(e) => setFilterNama(e.target.value)} className="rounded-lg border border-slate-200 px-2.5 py-2 font-normal" placeholder="Cari nama" /></label>
               <label className="grid gap-1 font-semibold">NIK<input value={filterNik} onChange={(e) => setFilterNik(e.target.value)} className="rounded-lg border border-slate-200 px-2.5 py-2 font-normal" placeholder="Cari NIK" /></label>
-              {([['Departemen', selectedDept, setSelectedDept, uniqueDeptFilterList], ['Nomor PR', selectedPR, setSelectedPR, uniquePRList], ['Section', filterSection, setFilterSection, uniqueSectionList], ['Ukuran Baju', filterUkuran, setFilterUkuran, uniqueUkuranList]] as const).map(([label, value, setter, options]) => <label key={label} className="grid gap-1 font-semibold">{label}<select value={value} onChange={(e) => setter(e.target.value)} className="rounded-lg border border-slate-200 px-2.5 py-2 font-normal"><option value="ALL">Semua</option>{options.map((option) => <option key={option} value={option}>{option}</option>)}</select></label>)}
+              {([['Departemen', selectedDept, setSelectedDept, uniqueDeptFilterList], ['Nomor PR', selectedPR, setSelectedPR, uniquePRList], ['Batch', selectedBatch, setSelectedBatch, uniqueBatchList], ['Section', filterSection, setFilterSection, uniqueSectionList], ['Ukuran Baju', filterUkuran, setFilterUkuran, uniqueUkuranList]] as const).map(([label, value, setter, options]) => <label key={label} className="grid gap-1 font-semibold">{label}<select value={value} onChange={(e) => setter(e.target.value)} className="rounded-lg border border-slate-200 px-2.5 py-2 font-normal"><option value="ALL">Semua</option>{options.map((option) => <option key={option} value={option}>{option}</option>)}</select></label>)}
               <label className="grid gap-1 font-semibold">Status<select value={selectedStatus} onChange={(e) => setSelectedStatus(e.target.value as typeof selectedStatus)} className="rounded-lg border border-slate-200 px-2.5 py-2 font-normal"><option value="all">Semua</option><option value="dipesan">Dipesan</option><option value="diterima">Diterima</option></select></label>
               <label className="grid gap-1 font-semibold">Tanggal mulai<input type="date" value={startDateInput} onChange={(e) => setStartDateInput(e.target.value)} className="rounded-lg border border-slate-200 px-2.5 py-2 font-normal" /></label>
               <label className="grid gap-1 font-semibold">Tanggal akhir<input type="date" value={endDateInput} onChange={(e) => setEndDateInput(e.target.value)} className="rounded-lg border border-slate-200 px-2.5 py-2 font-normal" /></label>
@@ -517,7 +508,7 @@ export function TrackingPage({
 
         <div className="overflow-x-auto">
           <table className="w-full min-w-[1400px] text-left text-sm">
-            <thead className="bg-slate-50 text-slate-600">
+            <thead className="whitespace-nowrap bg-slate-50 text-slate-600">
               <tr>
                 <th className="w-10 px-3 py-3 text-center">
                   <input type="checkbox" checked={paginatedRecords.length > 0 && paginatedRecords.every((record) => selectedIds.includes(record.id))} onChange={toggleSelectVisible} className="h-4 w-4 rounded border-slate-300 accent-blue-600" />
@@ -533,24 +524,24 @@ export function TrackingPage({
                 <th className="px-4 py-3 font-semibold">Tgl Terima</th>
                 <th className="px-4 py-3 font-semibold">Status</th>
                 <th className="px-4 py-3 font-semibold">Batch</th>
-                <th className="px-4 py-3 font-semibold">Keterangan</th>
+                <th className="min-w-[260px] px-4 py-3 font-semibold">Keterangan</th>
                 <th className="px-4 py-3 font-semibold">Aksi</th>
               </tr>
             </thead>
             <tbody>
               {paginatedRecords.map((record) => (
-                <tr key={record.id} className={`border-t border-slate-200 hover:bg-slate-50/80 ${selectedIds.includes(record.id) ? 'bg-blue-50/40' : ''}`}>
+                <tr key={record.id} className={`whitespace-nowrap border-t border-slate-200 hover:bg-slate-50/80 ${selectedIds.includes(record.id) ? 'bg-blue-50/40' : ''}`}>
                   <td className="px-3 py-3 text-center">
                     <input type="checkbox" checked={selectedIds.includes(record.id)} onChange={() => toggleRecordSelection(record.id)} className="h-4 w-4 rounded border-slate-300 accent-blue-600" />
                   </td>
                   <td className="px-4 py-3 font-semibold text-blue-700">{record.noPR}</td>
                   <td className="px-4 py-3 text-slate-700">{record.nik}</td>
                   <td className="px-4 py-3 font-medium text-slate-800">{record.namaKaryawan}</td>
-                  <td className="px-4 py-3 text-slate-700">
+                  <td className="whitespace-normal px-4 py-3 text-slate-700">
                     <div>{record.departemen}</div>
                     <div className="mt-0.5 text-xs text-slate-500">{record.section || 'Belum diisi'}</div>
                   </td>
-                  <td className="px-4 py-3"><span className="inline-flex rounded-lg border border-blue-200 bg-blue-50 px-2 py-1 text-xs font-semibold text-blue-700">{record.ukuranBaju}</span></td>
+                  <td className="px-4 py-3"><span className="inline-flex rounded-lg border border-blue-200 bg-blue-50 px-2 py-1 text-xs font-semibold text-blue-700">{record.ukuranBaju || '-'}</span></td>
                   <td className="px-4 py-3"><span className="inline-flex rounded-lg border border-amber-200 bg-amber-50 px-2 py-1 text-xs font-semibold text-amber-700">{record.ukuranCelana || '-'}</span></td>
                   <td className="px-4 py-3 text-slate-700">{record.jumlahStel} stel</td>
                   <td className="px-4 py-3 text-slate-700">{formatDate(record.tglInput)}</td>
@@ -561,7 +552,7 @@ export function TrackingPage({
                     </span>
                   </td>
                   <td className="px-4 py-3 text-slate-600">{record.batch || '-'}</td>
-                  <td className="px-4 py-3 text-slate-600">{record.keterangan || '-'}</td>
+                  <td className="min-w-[260px] px-4 py-3 text-slate-600">{record.keterangan || '-'}</td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
                       {!record.tglTerima && (

@@ -2,8 +2,8 @@
 
 import React, { useEffect, useState } from 'react'
 import { X } from 'lucide-react'
-import { departments, sectionsMap, trouserSizes, uniformSizes } from './data'
-import type { UniformRecord } from './types'
+import { departments, sectionsMap, trouserSizes, uniformSizes } from '@/constants/uniform'
+import type { UniformRecord } from '@/types/seragam'
 import { parseFlexibleDate } from '@/lib/date-utils'
 
 export function EditRecordModal({
@@ -27,13 +27,31 @@ export function EditRecordModal({
     setForm((prev) => ({ ...prev, [key]: value }))
   }
 
+  const availableSections = sectionsMap[form.departemen] || []
+
+  const handleDepartmentChange = (value: string) => {
+    updateField('departemen', value === 'Lainnya' ? '' : value)
+    updateField('section', '')
+  }
+
+  const handleSectionChange = (value: string) => {
+    updateField('section', value === 'Lainnya' ? '' : value)
+  }
+
+  const handleShirtSizeChange = (value: string) => {
+    updateField('ukuranBaju', value === 'Lainnya' ? '' : value)
+  }
+
+  const handleTrouserSizeChange = (value: string) => {
+    updateField('ukuranCelana', value === 'Lainnya' ? '' : value)
+  }
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/45 p-3 sm:p-4 backdrop-blur-[1px] overflow-y-auto">
       <div className="w-full max-w-5xl rounded-2xl border border-slate-200 bg-white shadow-2xl max-h-[90vh] overflow-hidden flex flex-col">
         <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4">
           <div>
-            <div className="text-[11px] font-bold tracking-[0.18em] text-blue-700 uppercase">Edit Data</div>
-            <h3 className="text-xl font-extrabold text-slate-900">Edit Seragam Karyawan</h3>
+            <h3 className="text-xl font-extrabold text-slate-900">Edit Data Seragam Karyawan</h3>
           </div>
           <button onClick={onClose} className="rounded-lg border border-slate-200 bg-white p-2 text-slate-500 hover:bg-slate-100 hover:text-slate-700" aria-label="Close modal">
             <X className="h-4 w-4" />
@@ -58,38 +76,26 @@ export function EditRecordModal({
 
           <div>
             <label className="mb-1.5 block text-[11px] font-semibold text-slate-700">Departemen</label>
-            <select value={form.departemen} onChange={(e) => updateField('departemen', e.target.value)} className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm">
-              {departments.map((dept) => (
-                <option key={dept} value={dept}>{dept}</option>
-              ))}
-            </select>
+            <input list="edit-department-options" value={form.departemen} onChange={(e) => handleDepartmentChange(e.target.value)} className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm" placeholder="Pilih atau ketik departemen" />
+            <datalist id="edit-department-options">{departments.map((dept) => <option key={dept} value={dept} />)}<option value="Lainnya" /></datalist>
           </div>
 
           <div>
             <label className="mb-1.5 block text-[11px] font-semibold text-slate-700">Section</label>
-            <select value={form.section || ''} onChange={(e) => updateField('section', e.target.value)} className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm">
-              {Array.from(new Set([...(sectionsMap[form.departemen] || []), form.section].filter(Boolean))).map((section) => (
-                <option key={section} value={section}>{section}</option>
-              ))}
-              <option value="">Belum diisi</option>
-            </select>
+            <input list="edit-section-options" value={form.section || ''} onChange={(e) => handleSectionChange(e.target.value)} className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm" placeholder="Pilih atau ketik section" />
+            <datalist id="edit-section-options">{availableSections.map((section) => <option key={section} value={section} />)}<option value="Lainnya" /></datalist>
           </div>
 
           <div>
             <label className="mb-1.5 block text-[11px] font-semibold text-slate-700">Ukuran Baju</label>
-            <select value={form.ukuranBaju} onChange={(e) => updateField('ukuranBaju', e.target.value)} className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm">
-              {uniformSizes.map((size) => (
-                <option key={size} value={size}>{size}</option>
-              ))}
-            </select>
+            <input list="edit-shirt-size-options" value={form.ukuranBaju} onChange={(e) => handleShirtSizeChange(e.target.value)} className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm" placeholder="Pilih atau ketik ukuran baju" />
+            <datalist id="edit-shirt-size-options">{uniformSizes.filter((size) => size !== 'Custom Size').map((size) => <option key={size} value={size} />)}<option value="Lainnya" /></datalist>
           </div>
 
           <div>
             <label className="mb-1.5 block text-[11px] font-semibold text-slate-700">Ukuran Celana</label>
-            <select value={form.ukuranCelana || ''} onChange={(e) => updateField('ukuranCelana', e.target.value)} className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm">
-              <option value="">Belum diisi</option>
-              {trouserSizes.map((size) => <option key={size} value={size}>{size}</option>)}
-            </select>
+            <input list="edit-trouser-size-options" value={form.ukuranCelana || ''} onChange={(e) => handleTrouserSizeChange(e.target.value)} className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm" placeholder="Pilih atau ketik ukuran celana" />
+            <datalist id="edit-trouser-size-options">{trouserSizes.filter((size) => size !== 'Custom Size').map((size) => <option key={size} value={size} />)}<option value="Lainnya" /></datalist>
           </div>
 
           <div>
