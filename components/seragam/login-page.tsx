@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react'
 import { AlertCircle, ArrowRight, Lock, ShieldCheck, User } from 'lucide-react'
+import { LoginShortcut } from './login-shortcut'
 
 export function LoginPage({ onLogin }: { onLogin: (username: string, password: string) => Promise<void> | void }) {
   const [username, setUsername] = useState('admin')
@@ -113,7 +114,7 @@ export function LoginPage({ onLogin }: { onLogin: (username: string, password: s
           <span>Akses terbatas untuk pengguna internal PT JAI</span>
         </div>
       </div>
-
+      <LoginShortcut />
     </div>
   )
 }

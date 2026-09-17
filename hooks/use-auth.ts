@@ -40,9 +40,15 @@ export function useAuth(page: AppPage) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ username, password }),
     })
-    const data = await response.json()
+    const raw = await response.text()
+    let data: { user?: { username: string; name: string }; error?: string } = {}
+    try {
+      data = raw ? JSON.parse(raw) : {}
+    } catch {
+      data = {}
+    }
 
-    if (!response.ok) throw new Error(data?.error || 'Username atau password salah.')
+    if (!response.ok) throw new Error(data?.error || 'Server login tidak merespons dengan benar.')
 
     setUser({ username: data.user.username, fullName: data.user.name, role: 'admin', isLoggedIn: true })
     router.push('/landingpage')
