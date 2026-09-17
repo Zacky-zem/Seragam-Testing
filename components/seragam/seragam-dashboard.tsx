@@ -52,7 +52,7 @@ export default function SeragamDashboard({ page }: { page: AppPage }) {
         {page === 'landing' ? (
           <LandingPage records={records} onNavigateToTracking={() => router.push('/seragam')} isLoggedIn={Boolean(user?.isLoggedIn)} onRequireLogin={() => router.push('/login')} />
         ) : (
-          <TrackingPage records={records} onAddRecord={handleAddRecord} onUpdateRecord={handleUpdateRecord} onDeleteRecord={handleDeleteRecord} onNavigateHome={() => router.push('/landingpage')} />
+          <TrackingPage records={records} onAddRecord={handleAddRecord} onUpdateRecord={handleUpdateRecord} onDeleteRecord={handleDeleteRecord} onNavigateHome={() => router.push('/landingpage')} isLoggedIn={Boolean(user?.isLoggedIn)} />
         )}
       </main>
       <footer className="border-t border-border bg-card py-6 text-center text-xs text-muted-foreground no-print">

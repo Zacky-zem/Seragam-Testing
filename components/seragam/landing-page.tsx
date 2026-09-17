@@ -37,7 +37,7 @@ export function LandingPage({ records, onNavigateToTracking, isLoggedIn, onRequi
                 <h1 className="max-w-6xl text-balance text-3xl font-bold leading-[1.08] tracking-tight text-white sm:text-5xl">Data seragam lebih rapi, distribusi lebih terkendali.</h1>
                 <p className="max-w-5xl text-pretty text-base font-normal leading-7 text-slate-200 sm:text-lg">Kelola seluruh proses pengajuan seragam karyawan, dari ukuran hingga penerimaan, secara efisien dalam satu dasbor terpadu.</p>
               </div>
-              <button onClick={onNavigateToTracking} className="inline-flex w-fit items-center gap-2 rounded-full bg-white px-6 py-3.5 text-sm font-bold text-primary shadow-lg shadow-slate-950/15 transition-all hover:-translate-y-1 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-primary"><span>Kelola Data Seragam</span><ArrowRight aria-hidden="true" /></button>
+              <button onClick={onNavigateToTracking} className="inline-flex w-fit items-center gap-2 rounded-full bg-white px-6 py-3.5 text-sm font-bold text-primary shadow-lg shadow-slate-950/15 transition-all hover:-translate-y-1 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-primary"><span>{isLoggedIn ? 'Kelola Data Seragam' : 'Buka Viewer Data'}</span><ArrowRight aria-hidden="true" /></button>
             </div>
           </div>
         </div>

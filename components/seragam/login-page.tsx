@@ -34,10 +34,10 @@ export function LoginPage({ onLogin }: { onLogin: (username: string, password: s
   }
 
   return (
-    <div className="relative min-h-screen w-full overflow-hidden bg-[#071b32] lg:flex lg:flex-row">
+    <div className="relative min-h-screen w-full overflow-hidden bg-[#071b32]">
       <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: "url('https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-5aC5PMxLwXqVaJdrznCIas8Fjw2Str.png')" }} aria-hidden="true" />
       <div className="absolute inset-0 bg-slate-950/55 backdrop-blur-[2px]" aria-hidden="true" />
-      <div className="relative z-10 flex w-full flex-col justify-between p-6 sm:p-12 lg:w-1/2 lg:p-16 xl:p-24">
+      <div className="relative z-10 flex min-h-screen w-full flex-col justify-between p-6 sm:p-12 lg:p-16 xl:p-24">
 
         <div className="my-auto w-full max-w-md mx-auto rounded-[2rem] border border-white/35 bg-white/15 p-6 shadow-2xl shadow-slate-950/30 backdrop-blur-2xl sm:p-9">
           <div className="mb-8">
@@ -114,20 +114,6 @@ export function LoginPage({ onLogin }: { onLogin: (username: string, password: s
         </div>
       </div>
 
-      <div className="hidden lg:flex w-1/2 bg-primary relative flex-col items-center justify-center p-12 xl:p-20 text-primary-foreground overflow-hidden">
-        <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#ffffff_1px,transparent_1px)] [background-size:20px_20px]" />
-
-        <div className="relative z-10 max-w-md text-left">
-
-          <h3 className="mt-6 text-4xl font-extrabold tracking-tight text-primary-foreground leading-tight mb-4">
-            One source of truth for uniform tracking.
-          </h3>
-          <p className="text-base text-primary-foreground/75 font-normal leading-relaxed">
-            Kelola data pengajuan seragam dan catat update kedatangan seragam dengan cepat, akurat, dan terstruktur.
-          </p>
-
-        </div>
-      </div>
     </div>
   )
 }

@@ -31,8 +31,8 @@ export function useUniformRecords(enabled: boolean, onError: NotifyError) {
   }, [])
 
   useEffect(() => {
-    if (enabled) fetchRecords()
-  }, [enabled, fetchRecords])
+    fetchRecords()
+  }, [fetchRecords])
 
   const addRecord = async (record: UniformRecord) => {
     try {
