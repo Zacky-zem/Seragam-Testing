@@ -34,14 +34,15 @@ export function LoginPage({ onLogin }: { onLogin: (username: string, password: s
   }
 
   return (
-    <div className="relative min-h-screen w-full overflow-hidden bg-[#f3f7fb] lg:flex lg:flex-row">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(30,112,168,0.12),transparent_35%)]" aria-hidden="true" />
-      <div className="relative flex w-full flex-col justify-between p-6 sm:p-12 lg:w-1/2 lg:p-16 xl:p-24">
+    <div className="relative min-h-screen w-full overflow-hidden bg-[#071b32] lg:flex lg:flex-row">
+      <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: "url('https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-5aC5PMxLwXqVaJdrznCIas8Fjw2Str.png')" }} aria-hidden="true" />
+      <div className="absolute inset-0 bg-slate-950/55 backdrop-blur-[2px]" aria-hidden="true" />
+      <div className="relative z-10 flex w-full flex-col justify-between p-6 sm:p-12 lg:w-1/2 lg:p-16 xl:p-24">
 
-        <div className="my-auto max-w-md w-full mx-auto py-8">
+        <div className="my-auto w-full max-w-md mx-auto rounded-[2rem] border border-white/35 bg-white/15 p-6 shadow-2xl shadow-slate-950/30 backdrop-blur-2xl sm:p-9">
           <div className="mb-8">
-            <h2 className="text-3xl font-extrabold text-foreground mt-3 tracking-tight">Selamat datang</h2>
-            <p className="text-sm text-muted-foreground mt-2">Masuk untuk mengelola dan memantau distribusi data seragam.</p>
+            <h2 className="mt-3 text-3xl font-extrabold tracking-tight text-white">Selamat datang</h2>
+            <p className="mt-2 text-sm text-white/75">Masuk untuk mengelola dan memantau distribusi data seragam.</p>
           </div>
 
           {error && (
@@ -53,7 +54,7 @@ export function LoginPage({ onLogin }: { onLogin: (username: string, password: s
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-xs font-semibold text-foreground mb-1.5" htmlFor="login-username">
+              <label className="mb-1.5 block text-xs font-semibold text-white" htmlFor="login-username">
                 Username
               </label>
               <div className="relative">
@@ -73,7 +74,7 @@ export function LoginPage({ onLogin }: { onLogin: (username: string, password: s
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-foreground mb-1.5" htmlFor="login-password">
+              <label className="mb-1.5 block text-xs font-semibold text-white" htmlFor="login-password">
                 Password
               </label>
               <div className="relative">

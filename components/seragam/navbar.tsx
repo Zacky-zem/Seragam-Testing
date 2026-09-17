@@ -2,65 +2,39 @@
 
 import Link from 'next/link'
 import Image from 'next/image'
-import { Calendar, Home, Layers, LogOut } from 'lucide-react'
+import { Home, Info, Layers, LogIn, LogOut, Sparkles } from 'lucide-react'
 import type { UserSession } from '@/types/seragam'
 
-export function Navbar({ currentView, user, onLogout }: { currentView: 'landing' | 'tracking'; user: UserSession; onLogout: () => void }) {
-  const currentDate = new Date().toLocaleDateString('id-ID', {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-  })
+export function Navbar({ currentView, user, onLogout }: { currentView: 'landing' | 'tracking'; user: UserSession | null; onLogout: () => void }) {
+  const isLoggedIn = Boolean(user?.isLoggedIn)
+  const navItems = [
+    { href: '/landingpage', label: 'Home', icon: Home, active: currentView === 'landing' },
+    { href: '/seragam', label: 'Data Seragam', icon: Layers, active: currentView === 'tracking' },
+    { href: '/landingpage#about', label: 'About', icon: Info, active: false },
+  ]
 
   return (
-    <header className="sticky top-0 z-40 border-b border-border bg-card/95 shadow-sm backdrop-blur no-print">
-      <div className="mx-auto flex min-h-20 max-w-7xl items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
-        <Link href="/landingpage" className="flex shrink-0 items-center" aria-label="Kembali ke menu utama">
-          <Image src="/yazaki-logo.jpeg" alt="Logo Yazaki" width={200} height={80} className="h-12 w-auto object-contain sm:h-14" priority />
+    <header className="sticky top-0 z-40 px-3 pt-3 sm:px-6 lg:px-8 no-print">
+      <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 rounded-[1.35rem] border border-white/60 bg-slate-950/90 px-3 py-2.5 text-white shadow-2xl shadow-slate-950/20 backdrop-blur-xl sm:px-4">
+        <Link href="/landingpage" className="flex shrink-0 items-center gap-2.5 rounded-full px-2 py-1" aria-label="Kembali ke menu utama">
+          <span className="grid size-9 place-items-center rounded-full bg-white text-[#143254] shadow-inner"><Sparkles className="size-4" /></span>
+          <span className="hidden text-sm font-bold tracking-tight sm:block">SERAGAM<span className="text-sky-300">.JAI</span></span>
         </Link>
-        <div className="flex items-center gap-2 sm:gap-4">
-          <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-muted border border-border text-xs font-medium text-muted-foreground">
-            <Calendar className="w-3.5 h-3.5 text-slate-400" />
-            <span>{currentDate}</span>
-          </div>
-
-          {currentView === 'tracking' ? (
-            <Link
-              id="btn-nav-home"
-              href="/landingpage"
-              className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 transition-colors"
-            >
-              <Home className="w-3.5 h-3.5 text-slate-600" />
-              <span>Menu Utama</span>
+        <nav className="flex items-center gap-0.5 sm:gap-1" aria-label="Navigasi utama">
+          {navItems.map(({ href, label, icon: Icon, active }) => (
+            <Link key={label} href={href} className={`inline-flex items-center gap-2 rounded-full px-3 py-2 text-xs font-semibold transition-all sm:px-4 ${active ? 'bg-white text-slate-950 shadow-lg' : 'text-slate-300 hover:bg-white/10 hover:text-white'}`}>
+              <Icon className="size-3.5" /><span className="hidden md:inline">{label}</span>
             </Link>
-          ) : (
-            <Link
-              id="btn-nav-tracking"
-              href="/seragam"
-              className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-semibold text-white bg-[#143254] hover:bg-[#1d4470] transition-colors shadow-xs"
-            >
-              <Layers className="w-3.5 h-3.5" />
-              <span>Data Seragam</span>
-            </Link>
-          )}
-
-          <div className="flex items-center gap-2 pl-2 border-l border-slate-200">
-            <div className="hidden sm:block text-right">
-              <div className="text-xs font-bold text-slate-800 leading-tight">{user.fullName}</div>
-              <div className="text-[11px] text-slate-500">{user.role}</div>
-            </div>
-
-            <button
-              id="btn-logout"
-              onClick={onLogout}
-              title="Keluar dari Aplikasi"
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-red-600 hover:text-red-700 hover:bg-red-50 border border-transparent hover:border-red-200 transition-all cursor-pointer"
-            >
-              <LogOut className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Logout</span>
-            </button>
+          ))}
+        </nav>
+        {isLoggedIn ? (
+          <div className="flex items-center gap-2 rounded-full bg-white px-2 py-1 text-slate-950 sm:pl-3">
+            <div className="hidden text-right sm:block"><p className="text-[11px] font-bold leading-tight">{user?.fullName}</p><p className="text-[10px] text-slate-500">{user?.username}</p></div>
+            <button onClick={onLogout} title="Keluar dari aplikasi" className="grid size-8 place-items-center rounded-full bg-slate-100 text-slate-700 transition hover:bg-red-50 hover:text-red-600"><LogOut className="size-3.5" /></button>
           </div>
-        </div>
+        ) : (
+          <Link href="/login" className="inline-flex items-center gap-2 rounded-full border border-white/30 bg-white/10 px-3 py-2 text-xs font-bold text-white transition hover:bg-white hover:text-slate-950 sm:px-4"><LogIn className="size-3.5" /><span>Masuk</span></Link>
+        )}
       </div>
     </header>
   )

@@ -25,25 +25,32 @@ export default function SeragamDashboard({ page }: { page: AppPage }) {
   }
   const { addRecord, deleteRecord, records, updateRecord } = useUniformRecords(Boolean(user?.isLoggedIn), (message) => showToast(message, 'error'))
 
+  const requireLogin = () => {
+    showToast('Silakan login terlebih dahulu untuk mengedit atau mengunduh data.', 'info')
+    router.push('/login')
+  }
   const handleAddRecord = async (record: UniformRecord) => {
+    if (!user?.isLoggedIn) return requireLogin()
     if (await addRecord(record)) showToast(`Pengajuan seragam untuk ${record.namaKaryawan} (${record.noPR}) berhasil disimpan.`)
   }
   const handleUpdateRecord = async (record: UniformRecord) => {
+    if (!user?.isLoggedIn) return requireLogin()
     if (await updateRecord(record)) showToast(`Data seragam ${record.namaKaryawan} (${record.noPR}) berhasil diperbarui.`)
   }
   const handleDeleteRecord = async (id: string) => {
+    if (!user?.isLoggedIn) return requireLogin()
     if (await deleteRecord(id)) showToast('Data seragam berhasil dihapus.', 'error')
   }
 
   if (page === 'login') return isCheckingSession ? <SessionLoading /> : <LoginPage onLogin={login} />
-  if (isCheckingSession || !user?.isLoggedIn) return <SessionLoading />
+  if (isCheckingSession) return <SessionLoading />
 
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground selection:bg-primary selection:text-primary-foreground">
       <Navbar currentView={page} user={user} onLogout={logout} />
       <main className="flex-1 pb-16">
         {page === 'landing' ? (
-          <LandingPage records={records} onNavigateToTracking={() => router.push('/seragam')} />
+          <LandingPage records={records} onNavigateToTracking={() => router.push('/seragam')} isLoggedIn={Boolean(user?.isLoggedIn)} onRequireLogin={() => router.push('/login')} />
         ) : (
           <TrackingPage records={records} onAddRecord={handleAddRecord} onUpdateRecord={handleUpdateRecord} onDeleteRecord={handleDeleteRecord} onNavigateHome={() => router.push('/landingpage')} />
         )}

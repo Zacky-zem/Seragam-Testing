@@ -22,11 +22,9 @@ export function useAuth(page: AppPage) {
         if (sessionUser) {
           setUser({ username: sessionUser.username, fullName: sessionUser.name, role: 'admin', isLoggedIn: true })
           if (page === 'login') router.replace('/landingpage')
-        } else if (page !== 'login') {
-          router.replace('/login')
         }
       } catch {
-        if (active && page !== 'login') router.replace('/login')
+        // Public pages remain readable even when the session endpoint is unavailable.
       } finally {
         if (active) setIsCheckingSession(false)
       }

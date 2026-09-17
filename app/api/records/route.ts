@@ -1,5 +1,12 @@
 import { NextResponse } from 'next/server'
+import { cookies } from 'next/headers'
 import { prisma } from '@/lib/prisma'
+
+async function requireSession() {
+  const sessionId = (await cookies()).get('seragam_session')?.value
+  if (!sessionId) return null
+  return prisma.user.findUnique({ where: { id: sessionId }, select: { id: true } })
+}
 import { dateOnlyToUtc } from '@/lib/date-utils'
 
 const toDate = (value: unknown) => {
@@ -14,6 +21,7 @@ export async function GET(request: Request) {
   return NextResponse.json(records)
 }
 export async function POST(request: Request) {
+  if (!(await requireSession())) return NextResponse.json({ error: 'Silakan login untuk mengubah data.' }, { status: 401 })
   let body: Record<string, unknown>
   try {
     body = await request.json()
@@ -79,6 +87,7 @@ export async function POST(request: Request) {
   }
 }
 export async function PATCH(request: Request) {
+  if (!(await requireSession())) return NextResponse.json({ error: 'Silakan login untuk mengubah data.' }, { status: 401 })
   const body = await request.json()
   const { id, ...payload } = body
   if (!id) return NextResponse.json({ error: 'ID data wajib diisi.' }, { status: 400 })
@@ -118,6 +127,7 @@ export async function PATCH(request: Request) {
   }
 }
 export async function DELETE(request: Request) {
+  if (!(await requireSession())) return NextResponse.json({ error: 'Silakan login untuk mengubah data.' }, { status: 401 })
   try {
     const { id } = await request.json()
     if (!id) return NextResponse.json({ error: 'ID data wajib diisi.' }, { status: 400 })

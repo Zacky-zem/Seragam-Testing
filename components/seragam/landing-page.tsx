@@ -7,12 +7,16 @@ import type { UniformRecord } from '@/types/seragam'
 const SHIRT_CHART = 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-OPZFAIyIy2zr3MuMQzuc1rhDI1zaAy.png'
 const TROUSER_CHART = 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-xYvbCQ1rfHJNGmV266QFERx1fGjcFv.png'
 
-export function LandingPage({ records, onNavigateToTracking }: { records: UniformRecord[]; onNavigateToTracking: () => void }) {
+export function LandingPage({ records, onNavigateToTracking, isLoggedIn, onRequireLogin }: { records: UniformRecord[]; onNavigateToTracking: () => void; isLoggedIn: boolean; onRequireLogin: () => void }) {
   const pending = records.filter((record) => !record.tglTerima).length
   const received = records.filter((record) => Boolean(record.tglTerima)).length
   const totalStel = records.reduce((total, record) => total + (record.jumlahStel || 1), 0)
 
   const downloadTemplate = (kind: 'pengajuan' | 'penerimaan') => {
+    if (!isLoggedIn) {
+      onRequireLogin()
+      return
+    }
     const rows = kind === 'pengajuan'
       ? [{ noPR: '', namaKaryawan: '', NIK: '', departemen: '', section: '', ukuranBaju: '', ukuranCelana: '', jumlahStel: 1, tglInput: '', batch: '', keterangan: '' }]
       : [{ nama: '', NIK: '', tglTerima: '', keterangan: '' }]
